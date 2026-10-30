@@ -389,7 +389,9 @@ async function scenarioMatch(media: Record<string, string>) {
     await clickText(host.page, "ابدأ المباراة");
 
     const listen = await waitView(host.page, "v.phase === 'listen'", 30000);
-    check(listen.sound?.id === "animals/cow" && listen.round === 1, `الجولة 1 بدأت والصوت المرجعي: ${listen.sound?.id}`);
+    // الموقع المنشور بدون أدوات الاختبار: الصوت عشوائي والمراحل بسرعتها الحقيقية
+    const live = !!process.env.BASE_URL;
+    check((live ? !!listen.sound : listen.sound?.id === "animals/cow") && listen.round === 1, `الجولة 1 بدأت والصوت المرجعي: ${listen.sound?.id}`);
     await sleep(700);
     await shot(host.page, "listen");
 
@@ -416,7 +418,7 @@ async function scenarioMatch(media: Record<string, string>) {
     console.log(`   الدرجات: سارة=${eHost.status}/${eHost.score} فهد=${eGuest.status}/${eGuest.score} نورة=${eQuiet.status}/${eQuiet.score}`);
     check(eHost.status === "ok" && eHost.score !== null, "تقليد سارة الحقيقي (من المايك) أخذ درجة محسوبة");
     check(eQuiet.status === "silent" && eQuiet.score === null && eQuiet.points === 0, "مايك نورة الصامت → «صامت» بدون درجة مخترعة");
-    check((eHost.score ?? 0) > (eGuest.score ?? 0), `تقليد البقرة (${eHost.score}) أعلى من تقليد صوت خاطئ (${eGuest.score})`);
+    if (!live) check((eHost.score ?? 0) > (eGuest.score ?? 0), `تقليد البقرة (${eHost.score}) أعلى من تقليد صوت خاطئ (${eGuest.score})`);
     await shot(host.page, "leaderboard");
 
     // إعادة الاتصال: فهد يحدّث الصفحة أثناء المباراة ويرجع
@@ -428,13 +430,15 @@ async function scenarioMatch(media: Record<string, string>) {
     const back = await waitView(guest.page, `v.players.find(p => p.name === 'فهد')?.connected === true`, 20000);
     check(back.code === lobby.code, "فهد رجع لنفس الغرفة بعد التحديث (إعادة الاتصال)");
 
-    const fin = await waitView(host.page, "v.phase === 'final'", 300000);
-    await sleep(1500);
-    await shot(host.page, "final-desktop");
-    await shot(guest.page, "final-mobile");
-    check(fin.final?.ranking.length === 3, "التتويج: ترتيب نهائي لثلاثة لاعبين");
-    check(fin.final!.ranking[fin.final!.ranking.length - 1].name === "نورة", "صاحبة المايك الصامت في المركز الأخير");
-    check(!!fin.final?.best, `أفضل تقليد: ${fin.final?.best?.value}/100`);
+    if (!live) {
+      const fin = await waitView(host.page, "v.phase === 'final'", 300000);
+      await sleep(1500);
+      await shot(host.page, "final-desktop");
+      await shot(guest.page, "final-mobile");
+      check(fin.final?.ranking.length === 3, "التتويج: ترتيب نهائي لثلاثة لاعبين");
+      check(fin.final!.ranking[fin.final!.ranking.length - 1].name === "نورة", "صاحبة المايك الصامت في المركز الأخير");
+      check(!!fin.final?.best, `أفضل تقليد: ${fin.final?.best?.value}/100`);
+    }
     const totals = await Promise.all([host, guest, quiet].map(async (p) => JSON.stringify((await view(p.page))?.players.map((x) => x.score))));
     check(new Set(totals).size === 1, `النقاط متزامنة على كل الأجهزة: ${totals[0]}`);
 
