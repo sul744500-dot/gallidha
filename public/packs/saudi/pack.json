@@ -1,0 +1,100 @@
+{
+  "id": "saudi",
+  "category": "saudi",
+  "emoji": "🇸🇦",
+  "name": {
+    "ar": "الباقة السعودية",
+    "en": "Saudi Pack"
+  },
+  "description": {
+    "ar": "تفحيط، بوري ونيت، مكيف شباك، مهباش، جمل، دباب",
+    "en": "Drifting, pickup horn, window AC, mihbash, camel, ATV"
+  },
+  "license": "Original sounds synthesized procedurally by the GALLIDHA sound engine (scripts/synth). Owned by the project.",
+  "sounds": [
+    {
+      "id": "drift",
+      "file": "drift.wav",
+      "name": {
+        "ar": "تفحيط",
+        "en": "Drifting"
+      },
+      "emoji": "🏎️",
+      "difficulty": 2,
+      "weights": {
+        "energy": 0.22
+      }
+    },
+    {
+      "id": "pickup-horn",
+      "file": "pickup-horn.wav",
+      "name": {
+        "ar": "بوري الونيت",
+        "en": "Pickup truck horn"
+      },
+      "emoji": "🛻",
+      "difficulty": 1,
+      "weights": {
+        "timing": 0.2
+      }
+    },
+    {
+      "id": "window-ac",
+      "file": "window-ac.wav",
+      "name": {
+        "ar": "مكيف شباك يشتغل",
+        "en": "Window AC starting"
+      },
+      "emoji": "🥵",
+      "difficulty": 2
+    },
+    {
+      "id": "mihbash",
+      "file": "mihbash.wav",
+      "name": {
+        "ar": "إيقاع المهباش",
+        "en": "Mihbash coffee rhythm"
+      },
+      "emoji": "☕",
+      "difficulty": 3,
+      "weights": {
+        "rhythm": 0.32,
+        "timing": 0.2,
+        "pitch": 0.08
+      }
+    },
+    {
+      "id": "camel",
+      "file": "camel.wav",
+      "name": {
+        "ar": "جمل معصب",
+        "en": "Grumpy camel"
+      },
+      "emoji": "🐪",
+      "difficulty": 2
+    },
+    {
+      "id": "atv",
+      "file": "atv.wav",
+      "name": {
+        "ar": "دباب في البر",
+        "en": "ATV in the desert"
+      },
+      "emoji": "🏜️",
+      "difficulty": 1,
+      "weights": {
+        "energy": 0.22
+      }
+    },
+    {
+      "id": "robot-hala",
+      "file": "robot-hala.wav",
+      "name": {
+        "ar": "روبوت الاستراحة: «هلا والله»",
+        "en": "Istiraha robot: “Hala wallah”"
+      },
+      "emoji": "🤖",
+      "difficulty": 2
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "id": "animals",
+  "category": "animals",
+  "emoji": "🐾",
+  "name": {
+    "ar": "أصوات الحيوانات",
+    "en": "Animal Sounds"
+  },
+  "description": {
+    "ar": "دجاجة وبقرة وقطة معصبة وحمار وأكثر",
+    "en": "Chicken, cow, angry cat, donkey and more"
+  },
+  "license": "Original sounds synthesized procedurally by the GALLIDHA sound engine (scripts/synth). Owned by the project.",
+  "sounds": [
+    {
+      "id": "chicken",
+      "file": "chicken.wav",
+      "name": {
+        "ar": "دجاجة",
+        "en": "Chicken"
+      },
+      "emoji": "🐔",
+      "difficulty": 1
+    },
+    {
+      "id": "cow",
+      "file": "cow.wav",
+      "name": {
+        "ar": "بقرة",
+        "en": "Cow"
+      },
+      "emoji": "🐄",
+      "difficulty": 1,
+      "weights": {
+        "pitch": 0.3
+      }
+    },
+    {
+      "id": "angry-cat",
+      "file": "angry-cat.wav",
+      "name": {
+        "ar": "قطة معصبة",
+        "en": "Angry cat"
+      },
+      "emoji": "😾",
+      "difficulty": 2
+    },
+    {
+      "id": "donkey",
+      "file": "donkey.wav",
+      "name": {
+        "ar": "حمار",
+        "en": "Donkey"
+      },
+      "emoji": "🫏",
+      "difficulty": 2,
+      "weights": {
+        "rhythm": 0.25
+      }
+    },
+    {
+      "id": "dog",
+      "file": "dog.wav",
+      "name": {
+        "ar": "كلب",
+        "en": "Dog"
+      },
+      "emoji": "🐕",
+      "difficulty": 1,
+      "weights": {
+        "rhythm": 0.25,
+        "timing": 0.18
+      }
+    },
+    {
+      "id": "rooster",
+      "file": "rooster.wav",
+      "name": {
+        "ar": "ديك",
+        "en": "Rooster"
+      },
+      "emoji": "🐓",
+      "difficulty": 2,
+      "weights": {
+        "pitch": 0.3
+      }
+    },
+    {
+      "id": "sheep",
+      "file": "sheep.wav",
+      "name": {
+        "ar": "خروف",
+        "en": "Sheep"
+      },
+      "emoji": "🐑",
+      "difficulty": 1
+    }
+  ]
+}

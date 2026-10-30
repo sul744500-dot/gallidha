@@ -1,0 +1,71 @@
+{
+  "id": "hard",
+  "category": "hard",
+  "emoji": "🔥",
+  "name": {
+    "ar": "أصوات صعبة",
+    "en": "Hard Sounds"
+  },
+  "description": {
+    "ar": "نبرات مركبة، تقطيع سريع، صعود وهبوط، إيقاع",
+    "en": "Compound tones, rapid staccato, rise & fall, rhythm"
+  },
+  "license": "Original sounds synthesized procedurally by the GALLIDHA sound engine (scripts/synth). Owned by the project.",
+  "sounds": [
+    {
+      "id": "multi-tone",
+      "file": "multi-tone.wav",
+      "name": {
+        "ar": "صوت مركب من عدة نبرات",
+        "en": "Multi-tone combo"
+      },
+      "emoji": "🎼",
+      "difficulty": 3,
+      "weights": {
+        "pitch": 0.34
+      }
+    },
+    {
+      "id": "staccato",
+      "file": "staccato.wav",
+      "name": {
+        "ar": "صوت متقطع سريع",
+        "en": "Rapid staccato"
+      },
+      "emoji": "⚡",
+      "difficulty": 3,
+      "weights": {
+        "rhythm": 0.3,
+        "timing": 0.18
+      }
+    },
+    {
+      "id": "rise-fall",
+      "file": "rise-fall.wav",
+      "name": {
+        "ar": "صوت يصعد ويهبط",
+        "en": "Rise and fall"
+      },
+      "emoji": "🎢",
+      "difficulty": 3,
+      "weights": {
+        "pitch": 0.4
+      }
+    },
+    {
+      "id": "beat",
+      "file": "beat.wav",
+      "name": {
+        "ar": "تكرار إيقاعي صعب",
+        "en": "Tricky rhythm"
+      },
+      "emoji": "🥁",
+      "difficulty": 3,
+      "weights": {
+        "rhythm": 0.32,
+        "timing": 0.2,
+        "pitch": 0.08
+      }
+    }
+  ]
+}

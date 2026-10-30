@@ -1,0 +1,241 @@
+@import "tailwindcss";
+@import "@fontsource/lalezar/arabic-400.css";
+@import "@fontsource/lalezar/latin-400.css";
+@import "@fontsource-variable/readex-pro";
+
+@theme {
+  --font-display: "Lalezar", "Readex Pro Variable", system-ui, sans-serif;
+  --font-sans: "Readex Pro Variable", "Segoe UI", system-ui, sans-serif;
+
+  --color-night-950: #0a061c;
+  --color-night-900: #140c33;
+  --color-night-800: #1c1146;
+  --color-night-700: #29185f;
+  --color-night-600: #3a2480;
+
+  --color-grape-300: #c4b5fd;
+  --color-grape-400: #a78bfa;
+  --color-grape-500: #8b5cf6;
+  --color-grape-600: #7c3aed;
+  --color-grape-700: #5b21b6;
+
+  --color-azure-300: #7dd3fc;
+  --color-azure-400: #38bdf8;
+  --color-azure-500: #3b82f6;
+  --color-azure-600: #2563eb;
+
+  --color-tang-300: #fdba74;
+  --color-tang-400: #fb923c;
+  --color-tang-500: #f97316;
+  --color-tang-600: #ea580c;
+
+  --color-mint-400: #34d399;
+  --color-rose-400: #fb7185;
+  --color-sun-300: #fde047;
+
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-pop: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-pulse-ring: pulse-ring 1.4s ease-out infinite;
+  --animate-wiggle: wiggle 2.4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(251 113 133 / 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 18px rgb(251 113 133 / 0);
+  }
+}
+@keyframes wiggle {
+  0%,
+  100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+@keyframes countdown-num {
+  0% {
+    transform: scale(2.4) rotate(-8deg);
+    opacity: 0;
+  }
+  25% {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0.92);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  background: var(--color-night-900);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: #fff;
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgb(124 58 237 / 0.45), transparent 60%),
+    radial-gradient(60% 50% at 100% 100%, rgb(249 115 22 / 0.22), transparent 70%),
+    radial-gradient(60% 50% at 0% 90%, rgb(59 130 246 / 0.25), transparent 70%),
+    var(--color-night-900);
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+button {
+  cursor: pointer;
+  font: inherit;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-azure-300);
+  outline-offset: 2px;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0;
+}
+
+/* شعار بارز ثلاثي الأبعاد: طبقات ظل متدرجة تعطي عمقًا */
+.logo-3d {
+  font-family: var(--font-display);
+  line-height: 1.05;
+  color: #fff7ed;
+  background: linear-gradient(180deg, #fff7ed 0%, #fde68a 45%, #fb923c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 0 #c2410c) drop-shadow(0 2px 0 #9a3412) drop-shadow(0 3px 0 #7c2d12) drop-shadow(0 4px 0 #5b21b6)
+    drop-shadow(0 5px 0 #4c1d95) drop-shadow(0 6px 0 #3b0f7a) drop-shadow(0 14px 18px rgb(0 0 0 / 0.55));
+}
+
+.logo-sub {
+  font-family: var(--font-display);
+  letter-spacing: 0.35em;
+  background: linear-gradient(90deg, #22d3ee, #a78bfa, #fb923c, #22d3ee);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+.glass {
+  background: linear-gradient(160deg, rgb(58 36 128 / 0.86), rgb(28 17 70 / 0.84));
+  border: 1px solid rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow:
+    0 10px 30px rgb(10 6 28 / 0.45),
+    inset 0 1px 0 rgb(255 255 255 / 0.12);
+}
+
+.btn-3d {
+  position: relative;
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    filter 0.15s;
+  box-shadow:
+    0 6px 0 var(--btn-depth, #9a3412),
+    0 12px 24px rgb(0 0 0 / 0.35);
+}
+.btn-3d:active:not(:disabled) {
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 var(--btn-depth, #9a3412),
+    0 4px 10px rgb(0 0 0 / 0.35);
+}
+.btn-3d:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.btn-3d:disabled {
+  filter: grayscale(0.6) brightness(0.7);
+}
+
+.countdown-num {
+  animation: countdown-num var(--step, 900ms) ease-out both;
+}
+
+.safe-top {
+  padding-top: max(10px, env(safe-area-inset-top));
+}
+.safe-bottom {
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+}
+
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+input[type="range"] {
+  accent-color: var(--color-tang-500);
+}

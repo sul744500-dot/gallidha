@@ -1,0 +1,15 @@
+# جاهز للنشر على Render (Blueprint) — لم يُنشر. نسخة واحدة لأن الغرف في ذاكرة الخادم.
+# Render يوفر HTTPS تلقائيًا (ضروري للمايك على الآيفون).
+services:
+  - type: web
+    name: gallidha
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: TRUST_PROXY
+        value: "1"

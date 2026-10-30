@@ -1,0 +1,91 @@
+{
+  "id": "human",
+  "category": "human",
+  "emoji": "😂",
+  "name": {
+    "ar": "أصوات بشرية مضحكة",
+    "en": "Funny Human Sounds"
+  },
+  "description": {
+    "ar": "شايب يعطس، ضحكة غريبة، شخير، تثاؤب",
+    "en": "Old man sneeze, weird laugh, snoring, yawning"
+  },
+  "license": "Original sounds synthesized procedurally by the GALLIDHA sound engine (scripts/synth). Owned by the project.",
+  "sounds": [
+    {
+      "id": "old-sneeze",
+      "file": "old-sneeze.wav",
+      "name": {
+        "ar": "شايب يعطس",
+        "en": "Old man sneezing"
+      },
+      "emoji": "🤧",
+      "difficulty": 1,
+      "weights": {
+        "timing": 0.18
+      }
+    },
+    {
+      "id": "weird-laugh",
+      "file": "weird-laugh.wav",
+      "name": {
+        "ar": "ضحكة غريبة",
+        "en": "Weird laugh"
+      },
+      "emoji": "🤪",
+      "difficulty": 2,
+      "weights": {
+        "rhythm": 0.25
+      }
+    },
+    {
+      "id": "scream",
+      "file": "scream.wav",
+      "name": {
+        "ar": "صرخة مفاجئة",
+        "en": "Sudden scream"
+      },
+      "emoji": "😱",
+      "difficulty": 1
+    },
+    {
+      "id": "snore",
+      "file": "snore.wav",
+      "name": {
+        "ar": "شخص يشخر",
+        "en": "Snoring"
+      },
+      "emoji": "😴",
+      "difficulty": 1,
+      "weights": {
+        "rhythm": 0.24
+      }
+    },
+    {
+      "id": "yawn",
+      "file": "yawn.wav",
+      "name": {
+        "ar": "شخص يتثاوب",
+        "en": "Yawning"
+      },
+      "emoji": "🥱",
+      "difficulty": 1,
+      "weights": {
+        "pitch": 0.3
+      }
+    },
+    {
+      "id": "evil-laugh",
+      "file": "evil-laugh.wav",
+      "name": {
+        "ar": "ضحكة شريرة",
+        "en": "Evil laugh"
+      },
+      "emoji": "😈",
+      "difficulty": 2,
+      "weights": {
+        "rhythm": 0.24
+      }
+    }
+  ]
+}

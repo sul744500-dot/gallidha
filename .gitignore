@@ -1,0 +1,7 @@
+node_modules
+dist
+.cert
+data
+e2e-shots
+*.log
+.env

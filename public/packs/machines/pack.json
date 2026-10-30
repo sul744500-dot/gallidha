@@ -1,0 +1,95 @@
+{
+  "id": "machines",
+  "category": "machines",
+  "emoji": "🚗",
+  "name": {
+    "ar": "سيارات وآلات",
+    "en": "Cars & Machines"
+  },
+  "description": {
+    "ar": "سيارة ما تبي تشتغل، محرك قديم، قطار، مكنسة",
+    "en": "A car that won't start, old engine, train, vacuum"
+  },
+  "license": "Original sounds synthesized procedurally by the GALLIDHA sound engine (scripts/synth). Owned by the project.",
+  "sounds": [
+    {
+      "id": "car-start",
+      "file": "car-start.wav",
+      "name": {
+        "ar": "سيارة تحاول تشتغل",
+        "en": "Car trying to start"
+      },
+      "emoji": "🚙",
+      "difficulty": 2,
+      "weights": {
+        "rhythm": 0.25
+      }
+    },
+    {
+      "id": "old-engine",
+      "file": "old-engine.wav",
+      "name": {
+        "ar": "محرك قديم",
+        "en": "Old engine"
+      },
+      "emoji": "🛻",
+      "difficulty": 2,
+      "weights": {
+        "rhythm": 0.28,
+        "pitch": 0.12
+      }
+    },
+    {
+      "id": "motorcycle",
+      "file": "motorcycle.wav",
+      "name": {
+        "ar": "دراجة نارية",
+        "en": "Motorcycle"
+      },
+      "emoji": "🏍️",
+      "difficulty": 1,
+      "weights": {
+        "energy": 0.22
+      }
+    },
+    {
+      "id": "train",
+      "file": "train.wav",
+      "name": {
+        "ar": "قطار",
+        "en": "Train"
+      },
+      "emoji": "🚂",
+      "difficulty": 2,
+      "weights": {
+        "rhythm": 0.26
+      }
+    },
+    {
+      "id": "car-horn",
+      "file": "car-horn.wav",
+      "name": {
+        "ar": "بوق سيارة",
+        "en": "Car horn"
+      },
+      "emoji": "📯",
+      "difficulty": 1,
+      "weights": {
+        "timing": 0.2
+      }
+    },
+    {
+      "id": "vacuum",
+      "file": "vacuum.wav",
+      "name": {
+        "ar": "مكنسة كهربائية",
+        "en": "Vacuum cleaner"
+      },
+      "emoji": "🧹",
+      "difficulty": 1,
+      "weights": {
+        "energy": 0.22
+      }
+    }
+  ]
+}
