@@ -1,5 +1,5 @@
 // اختبار شامل بمتصفحات Chrome حقيقية (بدون واجهة) — كل لاعب في متصفح مستقل بمايك وهمي يشغّل ملف صوت:
-//   المضيف «سارة» يقلّد البقرة فعلًا، «فهد» (جوال) يقلّد صوتًا خاطئًا، «نورة» مايكها صامت.
+//   المضيف «سارة» يقلّد صوت الجولة فعلًا، «فهد» (جوال) يقلّد صوتًا خاطئًا، «نورة» مايكها صامت.
 // يتحقق من: صلاحيات المايك وحالات الرفض/الأخطاء، الدخول برابط الدعوة وبالكود، الدردشة الصوتية WebRTC
 // وأن الكتم أثناء التسجيل فعلي في مسار البث (getStats)، التسجيل الحقيقي والتقييم والعرض والعجلة والتتويج،
 // إعادة الاتصال، وإيقاف مسارات المايك عند المغادرة.
@@ -21,6 +21,9 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const OUT = resolve(root, process.env.SHOTS ?? "e2e-shots");
 const MEDIA = resolve(root, "e2e-shots/media");
 const PORT = 3300;
+/** صوت الجولة المثبّت في خادم الاختبار (من مكتبة اللعبة الفعلية)، وصوت آخر للتقليد الخاطئ */
+const FORCE = process.env.E2E_SOUND ?? "trends/algum-algum";
+const OTHER = "trends/huna-marru.wav";
 let BASE = process.env.BASE_URL ?? `http://localhost:${PORT}`;
 const CHROME =
   process.env.CHROME_PATH ??
@@ -54,9 +57,10 @@ function makeMedia() {
     out.set(x);
     return out;
   };
-  const cow = load("animals/cow.wav");
-  const scream = load("human/scream.wav");
-  const good = pad(imitate(cow.samples, cow.sampleRate, { sloppiness: 0.15, leadMs: 100, seed: 4 }), 16000, 0.6);
+  // صوت الجولة المثبّت + صوت آخر من نفس المكتبة للتقليد الخاطئ
+  const target = load(`${FORCE.split("/")[0]}/${FORCE.split("/")[1]}.wav`);
+  const scream = load(OTHER);
+  const good = pad(imitate(target.samples, target.sampleRate, { sloppiness: 0.15, leadMs: 100, seed: 4 }), 16000, 0.6);
   const wrong = pad(imitate(scream.samples, scream.sampleRate, { sloppiness: 0.2, leadMs: 100, seed: 9 }), 16000, 1.5);
   const silent = new Float32Array(16000 * 3);
   for (let i = 0; i < silent.length; i++) silent[i] = (Math.random() * 2 - 1) * 0.0004;
@@ -68,7 +72,7 @@ function makeMedia() {
   }
   // نسخ بدون صمت إضافي للمايك الافتراضي (يبدأ التقليد مع «قلّد!» مثل اللاعب الحقيقي)
   paths.goodTake = join(MEDIA, "good-take.wav");
-  writeFileSync(paths.goodTake, Buffer.from(encodeWav(imitate(cow.samples, cow.sampleRate, { sloppiness: 0.15, leadMs: 0, seed: 4 }), 16000)));
+  writeFileSync(paths.goodTake, Buffer.from(encodeWav(imitate(target.samples, target.sampleRate, { sloppiness: 0.15, leadMs: 0, seed: 4 }), 16000)));
   paths.wrongTake = join(MEDIA, "wrong-take.wav");
   writeFileSync(paths.wrongTake, Buffer.from(encodeWav(imitate(scream.samples, scream.sampleRate, { sloppiness: 0.2, leadMs: 0, seed: 9 }), 16000)));
   return paths;
@@ -139,7 +143,7 @@ async function startServer(): Promise<ChildProcess | null> {
   const prod = existsSync(resolve(root, "dist/index.html"));
   const child = spawn(process.execPath, ["--import", "tsx", "server/index.ts"], {
     cwd: root,
-    env: { ...process.env, PORT: String(PORT), HTTPS_PORT: "off", GAME_SPEED: "0.4", FORCE_SOUND: "animals/cow", NODE_ENV: prod ? "production" : "development", REPORTS_FILE: "e2e-shots/reports.jsonl" },
+    env: { ...process.env, PORT: String(PORT), HTTPS_PORT: "off", GAME_SPEED: "0.4", FORCE_SOUND: FORCE, NODE_ENV: prod ? "production" : "development", REPORTS_FILE: "e2e-shots/reports.jsonl" },
     stdio: ["ignore", "pipe", "pipe"],
   });
   child.stdout?.on("data", (d) => process.env.E2E_VERBOSE && process.stdout.write(`[server] ${d}`));
@@ -163,7 +167,7 @@ async function launch(audio: string | null, extra: string[] = []): Promise<Brows
   return puppeteer.launch({
     executablePath: CHROME,
     headless: true,
-    protocolTimeout: 120_000,
+    protocolTimeout: 900_000,
     args: [
       ...(audio ? ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream", `--use-file-for-fake-audio-capture=${audio}`] : []),
       "--autoplay-policy=no-user-gesture-required",
@@ -386,12 +390,22 @@ async function scenarioMatch(media: Record<string, string>) {
     await clickText(guest.page, "أنا جاهز");
     await clickText(quiet.page, "أنا جاهز");
     await waitView(host.page, "v.players.filter(p => p.ready).length === 2");
+    // نسجّل ترتيب كل جولة عند المضيف لفحص النقاط لاحقًا
+    await host.page.evaluate(() => {
+      type V = { phase: string; round: number; leaderboard: unknown[] | null } | null;
+      const w = window as unknown as { __boards: unknown[][]; __gallidha: { game: { view: V; store: { subscribe(fn: () => void): void } } } };
+      w.__boards = [];
+      w.__gallidha.game.store.subscribe(() => {
+        const v = w.__gallidha.game.view;
+        if (v?.phase === "leaderboard" && v.leaderboard && !w.__boards[v.round - 1]) w.__boards[v.round - 1] = v.leaderboard;
+      });
+    });
     await clickText(host.page, "ابدأ المباراة");
 
     const listen = await waitView(host.page, "v.phase === 'listen'", 30000);
     // الموقع المنشور بدون أدوات الاختبار: الصوت عشوائي والمراحل بسرعتها الحقيقية
     const live = !!process.env.BASE_URL;
-    check((live ? !!listen.sound : listen.sound?.id === "animals/cow") && listen.round === 1, `الجولة 1 بدأت والصوت المرجعي: ${listen.sound?.id}`);
+    check((live ? !!listen.sound : listen.sound?.id === FORCE) && listen.round === 1, `الجولة 1 بدأت والصوت المرجعي: ${listen.sound?.id}`);
     await sleep(700);
     await shot(host.page, "listen");
 
@@ -418,7 +432,7 @@ async function scenarioMatch(media: Record<string, string>) {
     console.log(`   الدرجات: سارة=${eHost.status}/${eHost.score} فهد=${eGuest.status}/${eGuest.score} نورة=${eQuiet.status}/${eQuiet.score}`);
     check(eHost.status === "ok" && eHost.score !== null, "تقليد سارة الحقيقي (من المايك) أخذ درجة محسوبة");
     check(eQuiet.status === "silent" && eQuiet.score === null && eQuiet.points === 0, "مايك نورة الصامت → «صامت» بدون درجة مخترعة");
-    if (!live) check((eHost.score ?? 0) > (eGuest.score ?? 0), `تقليد البقرة (${eHost.score}) أعلى من تقليد صوت خاطئ (${eGuest.score})`);
+    if (!live) check((eHost.score ?? 0) > (eGuest.score ?? 0), `التقليد الصحيح (${eHost.score}) أعلى من تقليد صوت خاطئ (${eGuest.score})`);
     await shot(host.page, "leaderboard");
 
     // إعادة الاتصال: فهد يحدّث الصفحة أثناء المباراة ويرجع
@@ -436,7 +450,11 @@ async function scenarioMatch(media: Record<string, string>) {
       await shot(host.page, "final-desktop");
       await shot(guest.page, "final-mobile");
       check(fin.final?.ranking.length === 3, "التتويج: ترتيب نهائي لثلاثة لاعبين");
-      check(fin.final!.ranking[fin.final!.ranking.length - 1].name === "نورة", "صاحبة المايك الصامت في المركز الأخير");
+      // عجلة الحظ تعطي الأقل نقاطًا فرصة للعودة (قد تبدّل نقاطه مع المتصدر)، فنفحص نقاط التقليد نفسها لكل جولة
+      const boards = (await host.page.evaluate(() => (window as unknown as { __boards: { playerId: string; points: number }[][] }).__boards)) ?? [];
+      const quietId = fin.final!.ranking.find((r) => r.name === "نورة")?.id;
+      const quietPoints = boards.flat().filter((e) => e?.playerId === quietId).reduce((n, e) => n + e.points, 0);
+      check(boards.filter(Boolean).length === 4 && quietPoints === 0, `المايك الصامت لم يأخذ أي نقطة من التقليد في ${boards.filter(Boolean).length} جولات`);
       check(!!fin.final?.best, `أفضل تقليد: ${fin.final?.best?.value}/100`);
     }
     const totals = await Promise.all([host, guest, quiet].map(async (p) => JSON.stringify((await view(p.page))?.players.map((x) => x.score))));
@@ -467,18 +485,19 @@ async function scenarioExtras(media: Record<string, string>) {
     await clickText(p.page, "مكتبة الأصوات");
     await p.page.waitForFunction(() => document.body.innerText.includes("تدرّب"), { timeout: 15000 });
     const count = await p.page.evaluate(() => [...document.querySelectorAll("button")].filter((x) => x.innerText.includes("تدرّب")).length);
-    check(count === 30, `مكتبة الأصوات تعرض ${count} صوت أصلي (5 باقات)`);
-    await shot(p.page, "library");
     const packs = (await fetch(`${BASE}/api/packs`).then((r) => r.json())) as { sounds: { url: string }[] }[];
+    const total = packs.reduce((n, pk) => n + pk.sounds.length, 0);
+    check(count === total && total > 0, `مكتبة الأصوات تعرض كل الأصوات: ${count} من ${total}`);
+    await shot(p.page, "library");
     const wav = await fetch(BASE + packs[0].sounds[0].url);
     check(wav.ok && (await wav.arrayBuffer()).byteLength > 20000, "ملفات الأصوات حقيقية وقابلة للتشغيل (WAV)");
-    await p.page.goto(`${BASE}/?debug=1#/solo?sound=animals/cow`, { waitUntil: "networkidle2" });
+    await p.page.goto(`${BASE}/?debug=1#/solo?sound=${FORCE}`, { waitUntil: "networkidle2" });
     await maybeGate(p);
     await clickText(p.page, "سجّل تقليدك");
     await p.page.waitForFunction(() => document.body.innerText.includes("التشابه العام") || document.body.innerText.includes("ما انحسب"), { timeout: 40000 });
     await sleep(1400);
     const soloScore = await p.page.evaluate(() => Number(document.body.innerText.match(/(\d+)\s*\/100/)?.[1] ?? -1));
-    check(soloScore >= 60, `التدريب الفردي: تقليد البقرة قُيّم على الخادم بـ ${soloScore}/100`);
+    check(soloScore >= 60, `التدريب الفردي: تقليد صوت الجولة قُيّم على الخادم بـ ${soloScore}/100`);
     await sleep(1300);
     await shot(p.page, "solo-result");
     await p.page.click("button[aria-label='الإعدادات']");

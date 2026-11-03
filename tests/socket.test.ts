@@ -16,7 +16,7 @@ import { SAMPLE_RATE } from "../shared/constants";
 import type { ClientToServer, JoinResult, Phase, RoomSettings, RoomView, RtcData, ServerToClient } from "../shared/types";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const sounds = new SoundLibrary(resolve(root, "public/packs"));
+const sounds = new SoundLibrary(resolve(root, "tests/fixtures/packs"));
 const reports = memoryReportStore();
 let url = "";
 let close: () => void;
@@ -99,7 +99,7 @@ class Bot {
     if (this.style === "silent") samples = new Float32Array(SAMPLE_RATE * 2);
     else {
       const file = this.style === "wrong" ? "/packs/human/scream.wav" : soundUrl;
-      const d = decodeWav(readFileSync(resolve(root, "public" + file)));
+      const d = decodeWav(readFileSync(resolve(root, "tests/fixtures" + file)));
       samples = imitate(d.samples, d.sampleRate, { sloppiness: 0.2, seed: this.name.length });
     }
     this.socket.emit("game:upload", { round, wav: encodeWav(samples, SAMPLE_RATE), mutedAll: false });

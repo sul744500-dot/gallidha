@@ -16,6 +16,7 @@ import { navigate } from "../lib/router";
 import { sfx } from "../lib/sfx";
 import { useStore } from "../lib/store";
 import { openSettings } from "../components/SettingsDrawer";
+import { usePacks } from "./Library";
 
 export function Home() {
   const { t } = useLang();
@@ -116,6 +117,9 @@ export function CreateRoom() {
 
 export function RoomSettingsForm({ value: s, onChange: up, disabled }: { value: RoomSettings; onChange: (p: Partial<RoomSettings>) => void; disabled?: boolean }) {
   const { t } = useLang();
+  const packs = usePacks();
+  // نعرض فقط الأنواع التي فيها أصوات فعلًا في المكتبة الحالية
+  const available = CATEGORIES.filter((c) => packs?.some((p) => p.category === c));
   return (
     <div className="space-y-4">
       <Field label={t("create.mode")}>
@@ -151,10 +155,10 @@ export function RoomSettingsForm({ value: s, onChange: up, disabled }: { value: 
           options={RECORD_CHOICES.map((n) => ({ value: n, label: n === "auto" ? t("create.recordAuto") : t("create.seconds", { n }) }))}
         />
       </Field>
-      {s.mode !== "saudi" && s.mode !== "hard" && (
+      {s.mode !== "saudi" && s.mode !== "hard" && available.length > 1 && (
         <Field label={t("create.categories")}>
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((c: Category) => {
+            {available.map((c: Category) => {
               const on = s.categories.includes(c);
               return (
                 <button

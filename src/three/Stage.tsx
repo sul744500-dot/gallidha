@@ -102,7 +102,7 @@ function screenLines(mode: Mode, v: RoomView | null): { text: string; size: numb
   const t = (k: I18nKey, vars?: Record<string, string | number>) => translate(lang, k, vars);
   if (mode === "showcase" || !v) {
     // عرض تشويقي: أصوات من المكتبة تتبدل على الشاشة
-    const teasers = lang === "ar" ? ["🐔 دجاجة؟", "🫏 حمار؟", "🚗 سيارة ما تشتغل؟", "🤧 شايب يعطس؟", "🐪 جمل معصب؟"] : ["🐔 Chicken?", "🫏 Donkey?", "🚗 Stalling car?", "🤧 Old man sneeze?", "🐪 Grumpy camel?"];
+    const teasers = lang === "ar" ? ["🔥 القم القم؟", "💦 سبلوش توت؟", "🏀 سكس سفن؟", "💔 القلب عذّبه؟", "🕺 أحب أهزها؟"] : ["🔥 Algum algum?", "💦 Splosh toot?", "🏀 Six seven?", "💔 Tormented heart?", "🕺 Shake it?"];
     return [{ text: teasers[Math.floor(Date.now() / 2600) % teasers.length], size: 120, color: "#fde68a", y: 256 }];
   }
   const name = (id: string) => game.nameOf(id);

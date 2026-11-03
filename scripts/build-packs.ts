@@ -12,7 +12,8 @@ import { PACKS } from "./synth/sounds";
 import { SR } from "./synth/engine";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const outDir = resolve(root, "public/packs");
+// الأصوات المولّدة صارت عينات ثابتة للاختبارات الآلية؛ مكتبة اللعبة الفعلية في public/packs
+const outDir = resolve(root, "tests/fixtures/packs");
 const spectroIdx = process.argv.indexOf("--spectro");
 const spectroDir = spectroIdx > 0 ? resolve(process.argv[spectroIdx + 1]) : null;
 

@@ -1,0 +1,19 @@
+{
+  "id": "trends",
+  "category": "trends",
+  "emoji": "🔥",
+  "name": { "ar": "ترندات", "en": "Trends" },
+  "description": { "ar": "أول 8 ثوانٍ من مقاطع ترند مختارة", "en": "The first 8 seconds of hand-picked trending clips" },
+  "license": "Short excerpts (first 8 seconds) of videos supplied by the game owner. Rights belong to the original creators.",
+  "sounds": [
+    { "id": "ibn-amm", "file": "ibn-amm.wav", "name": { "ar": "ولد عمك اللي توه جاي من الديرة", "en": "Cousin fresh from the village" }, "emoji": "🤠", "difficulty": 2 },
+    { "id": "mashallah-hawa", "file": "mashallah-hawa.wav", "name": { "ar": "ماشاءالله عليها هوى", "en": "Mashallah, so lovely" }, "emoji": "🥹", "difficulty": 2, "weights": { "rhythm": 0.26 } },
+    { "id": "huna-marru", "file": "huna-marru.wav", "name": { "ar": "هنا مرّوا وكانوا قدوة", "en": "Here they passed by" }, "emoji": "🎤", "difficulty": 2 },
+    { "id": "six-seven", "file": "six-seven.wav", "name": { "ar": "67 (سكس سفن)", "en": "67 Kid" }, "emoji": "🏀", "difficulty": 1 },
+    { "id": "ahib-ahizha", "file": "ahib-ahizha.wav", "name": { "ar": "أحب أهزها", "en": "I love to shake it" }, "emoji": "🕺", "difficulty": 2, "weights": { "rhythm": 0.26 } },
+    { "id": "algalb-adhabah", "file": "algalb-adhabah.wav", "name": { "ar": "القلب عذّبه", "en": "The heart tormented him" }, "emoji": "💔", "difficulty": 2, "weights": { "rhythm": 0.26 } },
+    { "id": "algum-algum", "file": "algum-algum.wav", "name": { "ar": "القم القم — دحومي 999", "en": "Algum Algum — Dahoomi 999" }, "emoji": "🔥", "difficulty": 1 },
+    { "id": "hut-alcode", "file": "hut-alcode.wav", "name": { "ar": "حط الكود في عينه (فونك)", "en": "Put the code in his eye (phonk)" }, "emoji": "😎", "difficulty": 3, "weights": { "rhythm": 0.28 } },
+    { "id": "splosh-toot", "file": "splosh-toot.wav", "name": { "ar": "سبلوش توت", "en": "Splosh Toot" }, "emoji": "💦", "difficulty": 2 }
+  ]
+}

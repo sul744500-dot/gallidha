@@ -11,7 +11,8 @@ import { applySabotage, sabotageDurationMs, SABOTAGES } from "../shared/audio/ef
 import { SAMPLE_RATE } from "../shared/constants";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const packs = resolve(root, "public/packs");
+// عينات ثابتة (أصوات مولّدة) حتى لا تتغير نتائج الاختبار مع تغيّر مكتبة اللعبة
+const packs = resolve(root, "tests/fixtures/packs");
 
 function loadRef(path: string) {
   const d = decodeWav(readFileSync(join(packs, path)));

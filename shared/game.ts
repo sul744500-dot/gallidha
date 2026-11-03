@@ -3,14 +3,14 @@
 import { MAX_PLAYERS, MIN_PLAYERS, RECORD_CHOICES, ROUND_CHOICES } from "./constants";
 import type { Category, GameMode, RoomSettings, WheelOutcome } from "./types";
 
-export const CATEGORIES: Category[] = ["animals", "machines", "human", "hard", "saudi"];
+export const CATEGORIES: Category[] = ["trends", "animals", "machines", "human", "hard", "saudi"];
 export const MODES: GameMode[] = ["classic", "laugh", "hard", "saudi"];
 
 export const DEFAULT_SETTINGS: RoomSettings = {
   maxPlayers: 8,
   rounds: 6,
   recordSeconds: "auto",
-  categories: ["animals", "machines", "human", "saudi"],
+  categories: ["trends", "animals", "machines", "human", "saudi"],
   mode: "classic",
   wheel: true,
   voiceChat: true,

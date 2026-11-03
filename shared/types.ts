@@ -3,7 +3,7 @@
 export type Lang = "ar" | "en";
 export type LocalText = { ar: string; en: string };
 
-export type Category = "animals" | "machines" | "human" | "hard" | "saudi";
+export type Category = "trends" | "animals" | "machines" | "human" | "hard" | "saudi";
 export type GameMode = "classic" | "laugh" | "hard" | "saudi";
 export type RevealOrder = "random" | "fixed";
 export type RecordChoice = "auto" | 4 | 6 | 8;
