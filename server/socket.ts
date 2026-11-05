@@ -1,5 +1,6 @@
 // ربط Socket.IO بمنطق الغرف: تحقق من كل حدث، حدود للمعدل، وتمرير إشارات WebRTC بين أعضاء نفس الغرفة فقط
 
+import { isRude } from "./moderation";
 import type { Server, Socket } from "socket.io";
 import { AVATAR_COLORS, EYES, HATS, MAX_RECORDING_BYTES, NAME_MAX, REPORT_MAX } from "../shared/constants";
 import { cleanName, isValidCode } from "../shared/game";
@@ -196,6 +197,7 @@ export function attachGame(io: GameServer, opts: GameOptions) {
         if (typeof ack !== "function") return;
         const name = cleanName(isObj(p) ? p.name : null, NAME_MAX);
         if (!name) return ack({ ok: false, error: "bad_name" });
+        if (isRude(name)) return ack({ ok: false, error: "rude_name" });
         leaveCurrent();
         const room = manager.create(isObj(p) ? p.roomName : null, isObj(p) && isObj(p.settings) ? p.settings : undefined);
         const player = room.addPlayer(name, parseAvatar(p.avatar), parseMic(p.mic), parseDevice(p.device))!;
@@ -219,6 +221,7 @@ export function attachGame(io: GameServer, opts: GameOptions) {
         if (room.players.size >= room.settings.maxPlayers) return ack({ ok: false, error: "full" });
         const name = cleanName(p.name, NAME_MAX);
         if (!name) return ack({ ok: false, error: "bad_name" });
+        if (isRude(name)) return ack({ ok: false, error: "rude_name" });
         leaveCurrent();
         const player = room.addPlayer(name, parseAvatar(p.avatar), parseMic(p.mic), device)!;
         socket.to(room.code).emit("toast", { key: "toast.joined", vars: { name: player.name } });
@@ -305,7 +308,9 @@ export function attachGame(io: GameServer, opts: GameOptions) {
       guard((p) => {
         const s = session();
         if (!s || !isObj(p)) return;
-        s.room.setProfile(s.playerId, { name: p.name, avatar: p.avatar ? parseAvatar(p.avatar) : undefined });
+        const rude = typeof p.name === "string" && isRude(p.name);
+        if (rude) socket.emit("toast", { key: "toast.rudeName" });
+        s.room.setProfile(s.playerId, { name: rude ? undefined : p.name, avatar: p.avatar ? parseAvatar(p.avatar) : undefined });
       }),
     );
 

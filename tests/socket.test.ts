@@ -10,6 +10,7 @@ import { SoundLibrary } from "../server/packs";
 import { memoryReportStore } from "../server/reports";
 import { inlineScorer } from "../server/scoring/pool";
 import { attachGame } from "../server/socket";
+import { RUDE_LISTS } from "../server/moderation";
 import { imitate } from "../shared/audio/imitate";
 import { decodeWav, encodeWav } from "../shared/audio/wav";
 import { SAMPLE_RATE } from "../shared/constants";
@@ -208,9 +209,30 @@ describe("الغرف واللعب الجماعي عبر Socket.IO", () => {
     [host, b, c].forEach((x) => x.disconnect());
   }, 90000);
 
+  it("الأسماء غير اللائقة مرفوضة، واسم الغرفة غير اللائق يصير افتراضيًا، وتغيير الاسم لكلمة وسخة ما يمشي", async () => {
+    const bad = RUDE_LISTS.word.find((w) => /[ء-ي]/.test(w))!;
+    const x = new Bot(`يا ${bad}`);
+    const r1 = await x.create();
+    expect(r1.ok).toBe(false);
+    expect(!r1.ok && r1.error).toBe("rude_name");
+    const host = new Bot("سارة");
+    await host.ready();
+    const created = await host.socket.emitWithAck("room:create", { roomName: `غرفة ال${bad}`, name: "سارة", avatar: { color: 1, hat: 2, eyes: 0 }, settings: {}, mic: "on", device: host.device });
+    if (!created.ok) throw new Error("create failed");
+    Object.assign(host, { me: created.playerId, code: created.code });
+    const v = await host.until((s) => s.players.length === 1);
+    expect(v.name).toBe(`غرفة ${created.code}`);
+    const r2 = await x.join(created.code);
+    expect(!r2.ok && r2.error).toBe("rude_name");
+    host.socket.emit("room:profile", { name: `يا ${bad}` });
+    await wait(80);
+    expect(host.view!.players[0].name).toBe("سارة");
+    [x, host].forEach((b) => b.disconnect());
+  });
+
   it("مقلب صاحب اللعبة: «عبدالرحمن» ياخذ 1–5 مهما قلّد، والباقي درجاتهم طبيعية", async () => {
     const host = new Bot("سارة");
-    const created = await host.create({ rounds: 2, wheel: false, revealOrder: "fixed", maxPlayers: 4 });
+    const created = await host.create({ rounds: 4, wheel: false, revealOrder: "fixed", maxPlayers: 4 });
     if (!created.ok) throw new Error("create failed");
     const target = new Bot("عبد الرحمن");
     expect((await target.join(created.code)).ok).toBe(true);

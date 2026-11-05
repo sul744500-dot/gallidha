@@ -219,6 +219,7 @@ export type JoinError =
   | "full"
   | "kicked"
   | "bad_name"
+  | "rude_name"
   | "bad_request"
   | "rate_limited"
   | "expired";

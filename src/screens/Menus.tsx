@@ -60,7 +60,7 @@ export function Home() {
 }
 
 function errorKey(e: string): I18nKey {
-  return (`join.err.${["not_found", "full", "kicked", "bad_name", "bad_request", "rate_limited", "expired"].includes(e) ? e : "network"}`) as I18nKey;
+  return (`join.err.${["not_found", "full", "kicked", "bad_name", "rude_name", "bad_request", "rate_limited", "expired"].includes(e) ? e : "network"}`) as I18nKey;
 }
 
 /** نضمن تشغيل المايك قبل دخول الغرفة (قد يكون أُوقف عند مغادرة غرفة سابقة) */

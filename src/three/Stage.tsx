@@ -104,8 +104,8 @@ function screenLines(mode: Mode, v: RoomView | null): { text: string; size: numb
     // عرض تشويقي: أصوات من المكتبة تتبدل على الشاشة
     const teasers =
       lang === "ar"
-        ? ["🏃 سلّكت؟", "☕ داخل الشاهي؟", "🦾 قبضة البعبع؟", "😱 FAHHH؟", "👳 الله يحييك؟", "😩 لا تقتل المتعة؟"]
-        : ["🏃 Sallakt?", "☕ Into the tea?", "🦾 Bogeyman's fist?", "😱 FAHHH?", "👳 Allah yhayyeek?", "😩 Don't kill the fun?"];
+        ? ["🏃 سلّكت؟", "🦾 قبضة البعبع؟", "😱 FAHHH؟", "👳 الله يحييك؟", "😩 لا تقتل المتعة؟"]
+        : ["🏃 Sallakt?", "🦾 Bogeyman's fist?", "😱 FAHHH?", "👳 Allah yhayyeek?", "😩 Don't kill the fun?"];
     return [{ text: teasers[Math.floor(Date.now() / 2600) % teasers.length], size: 120, color: "#fde68a", y: 256 }];
   }
   const name = (id: string) => game.nameOf(id);

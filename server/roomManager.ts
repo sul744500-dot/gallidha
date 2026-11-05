@@ -1,5 +1,6 @@
 // إدارة الغرف: إنشاء برموز دعوة خاصة، البحث، وتنظيف الغرف الفارغة
 
+import { isRude } from "./moderation";
 import { randomInt } from "node:crypto";
 import { ROOM_NAME_MAX, TIMING } from "../shared/constants";
 import { cleanName, sanitizeSettings } from "../shared/game";
@@ -44,7 +45,9 @@ export class RoomManager {
 
   create(rawName: unknown, settings: Partial<RoomSettings> | undefined): Room {
     const code = this.newCode();
-    const name = cleanName(rawName, ROOM_NAME_MAX) ?? `غرفة ${code}`;
+    const clean = cleanName(rawName, ROOM_NAME_MAX);
+    // اسم غرفة فيه كلام غير لائق ← الاسم الافتراضي
+    const name = clean && !isRude(clean) ? clean : `غرفة ${code}`;
     const room = new Room(code, name, sanitizeSettings(settings), {
       ...this.deps,
       onChange: (r) => this.events.onChange(r),
