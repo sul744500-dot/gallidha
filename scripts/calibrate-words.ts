@@ -21,7 +21,7 @@ const load16 = (file: string) => {
   const d = decodeWav(readFileSync(file));
   return resample(d.samples, d.sampleRate, SAMPLE_RATE);
 };
-const manifest = JSON.parse(readFileSync(join(PACK, "pack.json"), "utf8")) as { sounds: { id: string; file: string; template?: string }[] };
+const manifest = JSON.parse(readFileSync(join(PACK, "pack.json"), "utf8")) as { sounds: { id: string; file: string; template?: string; articulate?: boolean }[] };
 const fixtures = (id: string) => [`${id}.wav`, `${id}-slow.wav`, `${id}.david.wav`, `${id}.zira-slow.wav`].map((f) => join(WORDS, f)).filter(existsSync);
 const others = ["other-1.wav", "other-2.wav", "other-3.wav", "wrong-1.david.wav", "wrong-2.zira.wav"].map((f) => load16(join(WORDS, f)));
 type Row = { kind: string; score: number | null; status: string; words?: number; melody?: number };
@@ -31,7 +31,7 @@ console.log("الصوت".padEnd(16), "ممتاز".padEnd(22), "كلمات صحي
 for (const s of manifest.sounds) {
   const refRaw = load16(join(PACK, s.file));
   const ref = extractFeatures(refRaw, SAMPLE_RATE);
-  const words = s.template ? extractFeatures(load16(join(PACK, s.template)), SAMPLE_RATE) : true;
+  const words = s.articulate === false ? false : s.template ? extractFeatures(load16(join(PACK, s.template)), SAMPLE_RATE) : true;
   const rows: Row[] = [];
   const run = (kind: string, x: Float32Array) => {
     const r = compareFeatures(ref, extractFeatures(x, SAMPLE_RATE), { words });

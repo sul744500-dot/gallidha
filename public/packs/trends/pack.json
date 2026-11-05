@@ -1,26 +1,31 @@
 {
   "id": "trends",
   "category": "trends",
-  "emoji": "🔥",
+  "emoji": "😂",
   "name": {
-    "ar": "ترندات",
-    "en": "Trends"
+    "ar": "ميمز سعودية",
+    "en": "Saudi memes"
   },
   "description": {
-    "ar": "أول 8 ثوانٍ من مقاطع ترند مختارة",
-    "en": "The first 8 seconds of hand-picked trending clips"
+    "ar": "أشهر أصوات الميمز في السعودية: حمودي999، طاش ما طاش، والرائج عالميًا",
+    "en": "The most popular meme sounds in Saudi Arabia: Hamoudi999, Tash Ma Tash and global hits"
   },
-  "license": "Short excerpts (first 8 seconds) of videos supplied by the game owner. Rights belong to the original creators.",
+  "license": "Short meme sound clips (max 8 seconds) from myinstants.com community uploads. Rights belong to the original creators.",
   "articulate": true,
   "sounds": [
-    {"id": "ibn-amm", "file": "ibn-amm.wav", "name": {"ar": "ولد عمك اللي توه جاي من الديرة", "en": "Cousin fresh from the village"}, "emoji": "🤠", "difficulty": 2},
-    {"id": "mashallah-hawa", "file": "mashallah-hawa.wav", "name": {"ar": "ماشاءالله عليها هوى", "en": "Mashallah, so lovely"}, "emoji": "🥹", "difficulty": 2, "weights": {"rhythm": 0.26}},
-    {"id": "huna-marru", "file": "huna-marru.wav", "name": {"ar": "هنا مرّوا وكانوا قدوة", "en": "Here they passed by"}, "emoji": "🎤", "difficulty": 2, "words": {"ar": "هنا مرّوا وكانوا قدوة للناس", "en": "Huna marrou wa kanou qudwa lin-nas"}, "template": "huna-marru.words.wav"},
-    {"id": "six-seven", "file": "six-seven.wav", "name": {"ar": "67 (سكس سفن)", "en": "67 Kid"}, "emoji": "🏀", "difficulty": 1, "words": {"ar": "سِكس سِفن! (Six Seven)", "en": "Six seven!"}, "template": "six-seven.words.wav"},
-    {"id": "ahib-ahizha", "file": "ahib-ahizha.wav", "name": {"ar": "أحب أهزها", "en": "I love to shake it"}, "emoji": "🕺", "difficulty": 2, "weights": {"rhythm": 0.26}},
-    {"id": "algalb-adhabah", "file": "algalb-adhabah.wav", "name": {"ar": "القلب عذّبه", "en": "The heart tormented him"}, "emoji": "💔", "difficulty": 2, "weights": {"rhythm": 0.26}},
-    {"id": "algum-algum", "file": "algum-algum.wav", "name": {"ar": "القم القم — دحومي 999", "en": "Algum Algum — Dahoomi 999"}, "emoji": "🔥", "difficulty": 1, "words": {"ar": "القم، القم، القم، القم يالهطف", "en": "Algum, algum, algum, algum yal-hatf"}, "template": "algum-algum.words.wav"},
-    {"id": "hut-alcode", "file": "hut-alcode.wav", "name": {"ar": "حط الكود في عينه (فونك)", "en": "Put the code in his eye (phonk)"}, "emoji": "😎", "difficulty": 3, "weights": {"rhythm": 0.28}},
-    {"id": "splosh-toot", "file": "splosh-toot.wav", "name": {"ar": "سبلوش توت", "en": "Splosh Toot"}, "emoji": "💦", "difficulty": 2, "words": {"ar": "سبلوش توت، سبلوش، سبلوش توت، سبلوش", "en": "Splosh toot, splosh, splosh toot, splosh"}, "template": "splosh-toot.words.wav"}
+    {"id": "sallakt", "file": "sallakt.wav", "name": {"ar": "سلّكت! — حمودي999", "en": "Sallakt! — Hamoudi999"}, "emoji": "🏃", "difficulty": 2, "words": {"ar": "سلّكت! … اعترف! سلّكت! والله سلّكت!", "en": "Sallakt! … I'tarif! Sallakt! Wallah sallakt!"}, "template": "sallakt.words.wav"},
+    {"id": "tasweer", "file": "tasweer.wav", "name": {"ar": "لو ما في تصوير — حمودي999", "en": "If there were no camera — Hamoudi999"}, "emoji": "🎥", "difficulty": 3, "words": {"ar": "أنا والله أمسك لساني في التصوير، والله لو ما في تصوير أعطيك بعض الكلمات اللي تستغرب من وجودها في معاجم اللغة", "en": "Ana wallah amsik lisani fit-tasweer, wallah law ma fi tasweer a'teek ba'd el-kalimat elli tistaghrib min wujoodha fi ma'ajim el-lugha"}, "template": "tasweer.words.wav"},
+    {"id": "shahi", "file": "shahi.wav", "name": {"ar": "أحطك داخل الشاهي — حمودي999", "en": "Into the tea — Hamoudi999"}, "emoji": "☕", "difficulty": 3, "words": {"ar": "أخلطك وأحط الشاهي حقك، أحطك داخل الشاهي وأحرك وأخلطك يا هطف", "en": "Akhlotak w ahot ash-shahi haggak, ahottak dakhel ash-shahi w aharrik w akhlotak ya hatf"}, "template": "shahi.words.wav"},
+    {"id": "blabla", "file": "blabla.wav", "name": {"ar": "بلا بلا بلا — حمودي999", "en": "Blah blah blah — Hamoudi999"}, "emoji": "🗣️", "difficulty": 1, "words": {"ar": "مرحبًا بكم في… بلا بلا بلا بلا بلا!", "en": "Marhaban bikum fi… bla bla bla bla bla!"}, "template": "blabla.words.wav"},
+    {"id": "aateeh", "file": "aateeh.wav", "name": {"ar": "عطيه! — حمودي999", "en": "Give it to him! — Hamoudi999"}, "emoji": "👊", "difficulty": 1, "words": {"ar": "عطيه! عطيه! عطيه!", "en": "A'teeh! A'teeh! A'teeh!"}, "template": "aateeh.words.wav"},
+    {"id": "haqood", "file": "haqood.wav", "name": {"ar": "يا تيسير يا الحقود", "en": "Taiseer, you spiteful one"}, "emoji": "😤", "difficulty": 2, "words": {"ar": "الحقود! … يا تيسير يا الحقود… حقود!", "en": "Al-haqood! … Ya Taiseer ya al-haqood… haqood!"}, "template": "haqood.words.wav"},
+    {"id": "qabdat-albabaa", "file": "qabdat-albabaa.wav", "name": {"ar": "قبضة البعبع", "en": "The Bogeyman's Fist"}, "emoji": "🦾", "difficulty": 1, "words": {"ar": "استعمل قبضة البعبع!", "en": "Ista'mil qabdat al-bu'bu'!"}, "template": "qabdat-albabaa.words.wav"},
+    {"id": "allah-yhayeek", "file": "allah-yhayeek.wav", "name": {"ar": "الله يحييك — طاش ما طاش", "en": "Allah yhayyeek — Tash Ma Tash"}, "emoji": "👳", "difficulty": 2, "words": {"ar": "من وين طلعت لنا؟ الله يحييك، والله يسلمك، والسعادة المباركة", "en": "Min wein tla'at lana? Allah yhayyeek, wallah ysallmak, was-sa'ada al-mubaraka"}, "template": "allah-yhayeek.words.wav"},
+    {"id": "naam-bhalak", "file": "naam-bhalak.wav", "name": {"ar": "ونعم بحالك — طاش ما طاش", "en": "W ni'im b-halak — Tash Ma Tash"}, "emoji": "🤝", "difficulty": 3, "words": {"ar": "ونعم بحالك شرواك الطيب، طيب عمثالك، ولحية الغانم اللي جنبك", "en": "W ni'im b-halak sharwak at-tayyib, tayyib emthalak, w lihyat al-ghanim elli jambak"}, "template": "naam-bhalak.words.wav"},
+    {"id": "la-taqtel", "file": "la-taqtel.wav", "name": {"ar": "لا تقتل المتعة يا مسلم", "en": "Don't kill the fun, Muslim"}, "emoji": "😩", "difficulty": 1, "words": {"ar": "لا تقتل المتعة يا مسلم!", "en": "La taqtul al-mut'a ya Muslim!"}, "template": "la-taqtel.words.wav"},
+    {"id": "abdulrahman", "file": "abdulrahman.wav", "name": {"ar": "يا عبد الرحمن!", "en": "Ya Abdulrahman!"}, "emoji": "📣", "difficulty": 2, "words": {"ar": "يا عبد الرحمن! عبد الرحمن! يا عبد الرحمن!", "en": "Ya Abdulrahman! Abdulrahman! Ya Abdulrahman!"}, "template": "abdulrahman.words.wav"},
+    {"id": "fahhh", "file": "fahhh.wav", "name": {"ar": "فااااه (FAHHH)", "en": "FAHHH"}, "emoji": "😱", "difficulty": 1, "words": {"ar": "فااااه!", "en": "FAHHHH!"}, "template": "fahhh.words.wav"},
+    {"id": "get-out", "file": "get-out.wav", "name": {"ar": "توكو: قِت آوت", "en": "Tuco: GET OUT"}, "emoji": "🚪", "difficulty": 1, "words": {"ar": "قِت آوت! (Get out)", "en": "GET OUT!"}, "template": "get-out.words.wav"},
+    {"id": "bruh", "file": "bruh.wav", "name": {"ar": "برُه (Bruh)", "en": "Bruh"}, "emoji": "😑", "difficulty": 1, "words": {"ar": "برُه! (Bruh)", "en": "Bruh."}, "template": "bruh.words.wav"}
   ]
 }

@@ -15,7 +15,7 @@ export function SayWords({ sound, compact = false }: { sound: SoundInfo; compact
           </div>
         </div>
       )}
-      <div className="text-xs font-semibold text-white/65">{t("phase.noHum")}</div>
+      {sound.speech && <div className="text-xs font-semibold text-white/65">{t("phase.noHum")}</div>}
     </div>
   );
 }

@@ -35,6 +35,8 @@ interface PackJson {
     /** الكلمات المعروضة للاعب */
     words?: LocalText;
     template?: string;
+    /** يغلب إعداد الباقة: false = يُقيَّم باللحن والطابع فقط (صرخة/صوت بلا حروف) */
+    articulate?: boolean;
   }[];
 }
 
@@ -79,7 +81,8 @@ export class SoundLibrary {
         difficulty: [1, 2, 3].includes(s.difficulty) ? s.difficulty : 2,
       };
       if (isText(s.words)) info.words = s.words;
-      if (p.articulate || info.words) info.speech = true;
+      // الصرخات الطويلة (مثل «وااااو») حروفها قليلة جدًا: صاحب الصوت يقدر يستثنيها بـ "articulate": false
+      if (s.articulate ?? (p.articulate || !!info.words)) info.speech = true;
       const template = s.template && /^[\w-]+\.words\.wav$/.test(s.template) && existsSync(join(this.dir, folder, s.template)) ? join(this.dir, folder, s.template) : undefined;
       sounds.push(info);
       this.byId.set(info.id, { info, file, weights: s.weights, words: !!info.speech, template });

@@ -22,8 +22,8 @@ const OUT = resolve(root, process.env.SHOTS ?? "e2e-shots");
 const MEDIA = resolve(root, "e2e-shots/media");
 const PORT = 3300;
 /** صوت الجولة المثبّت في خادم الاختبار (من مكتبة اللعبة الفعلية)، وصوت آخر للتقليد الخاطئ */
-const FORCE = process.env.E2E_SOUND ?? "trends/algum-algum";
-const OTHER = "trends/huna-marru.wav";
+const FORCE = process.env.E2E_SOUND ?? "trends/qabdat-albabaa";
+const OTHER = "trends/tasweer.wav";
 let BASE = process.env.BASE_URL ?? `http://localhost:${PORT}`;
 const CHROME =
   process.env.CHROME_PATH ??

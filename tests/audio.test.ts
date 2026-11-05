@@ -200,18 +200,17 @@ describe("مؤثرات التخريب", () => {
   });
 });
 
-describe("الكلمات لا الهمهمة (مقاطع الترندات)", () => {
-  // مقطع حقيقي من المكتبة + «قالب الكلمات» (نطق آلي نظيف لنفس الكلمات)، وتسجيلات اختبار ثابتة:
-  // نفس الكلمات بـ Piper وبصوت Windows إنجليزي بلكنة (متحدث مختلف تمامًا)، وكلام آخر
-  const trends = resolve(root, "public/packs/trends");
+describe("الكلمات لا الهمهمة (مقطع ميم حقيقي)", () => {
+  // مقطع حقيقي ثابت للاختبار («القم القم» — كان في المكتبة سابقًا) + «قالب الكلمات» (نطق آلي نظيف لنفس الكلمات)،
+  // وتسجيلات اختبار: نفس الكلمات بـ Piper وبصوت Windows إنجليزي بلكنة (متحدث مختلف تمامًا)، وكلام آخر
   const words = resolve(root, "tests/fixtures/words");
   const load16 = (file: string) => {
     const d = decodeWav(readFileSync(file));
     return resample(d.samples, d.sampleRate, SAMPLE_RATE);
   };
-  const clip = load16(join(trends, "algum-algum.wav"));
+  const clip = load16(join(words, "clip-algum-algum.wav"));
   const ref = extractFeatures(clip, SAMPLE_RATE);
-  const template = extractFeatures(load16(join(trends, "algum-algum.words.wav")), SAMPLE_RATE);
+  const template = extractFeatures(load16(join(words, "algum-algum.template.wav")), SAMPLE_RATE);
   const score = (x: Float32Array) => compareFeatures(ref, extractFeatures(x, SAMPLE_RATE), { words: template });
 
   it("الهمهمة «ممم» و«أممم» على نفس اللحن بالضبط تاخذ درجة منخفضة وكلمات ≈ صفر", () => {
