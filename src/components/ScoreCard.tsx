@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { RoundEntry, ScoreParts } from "../../shared/types";
+import type { RoundEntry, ScoreParts, SoundInfo } from "../../shared/types";
 import type { I18nKey } from "../lib/i18n";
 import { useLang } from "../lib/lang";
 
@@ -26,7 +26,7 @@ function color(v: number) {
 }
 
 /** درجة التقليد مع تفاصيل المعايير، أو رسالة «غير موثوق» بدون أي رقم مخترع */
-export function ScoreCard({ entry }: { entry: RoundEntry }) {
+export function ScoreCard({ entry, sound }: { entry: RoundEntry; sound?: SoundInfo | null }) {
   const { t } = useLang();
   const score = useCountUp(entry.score ?? 0);
   if (entry.status !== "ok" || entry.score === null || !entry.parts) {
@@ -49,15 +49,18 @@ export function ScoreCard({ entry }: { entry: RoundEntry }) {
         {entry.score === 100 && <div className="animate-wiggle font-display text-2xl text-sun-300">{t("reveal.perfect")}</div>}
       </div>
       <div className="grid grid-cols-1 gap-1.5">
-        {PARTS.map((k, i) => (
-          <div key={k} className="flex items-center gap-2 text-sm">
-            <span className="w-24 shrink-0 font-semibold text-white/80">{t(`score.${k}` as I18nKey)}</span>
-            <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/10">
-              <div className={`h-full rounded-full bg-gradient-to-l ${color(entry.parts![k])} transition-[width] duration-700`} style={{ width: `${entry.parts![k]}%`, transitionDelay: `${200 + i * 120}ms` }} />
+        {(entry.parts.words !== undefined ? (["words", ...PARTS] as (keyof ScoreParts)[]) : PARTS).map((k, i) => {
+          const v = entry.parts![k] ?? 0;
+          return (
+            <div key={k} className={`flex items-center gap-2 text-sm ${k === "words" ? "font-black" : ""}`}>
+              <span className="w-24 shrink-0 font-semibold text-white/80">{k === "words" && sound && !sound.words ? t("score.speech") : t(`score.${k}` as I18nKey)}</span>
+              <div className="h-3 flex-1 overflow-hidden rounded-full bg-white/10">
+                <div className={`h-full rounded-full bg-gradient-to-l ${color(v)} transition-[width] duration-700`} style={{ width: `${v}%`, transitionDelay: `${200 + i * 120}ms` }} />
+              </div>
+              <span className="w-8 text-end font-bold tabular-nums">{v}</span>
             </div>
-            <span className="w-8 text-end font-bold tabular-nums">{entry.parts![k]}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <div className="flex items-center justify-center gap-2 font-display text-2xl text-sun-300">
         {t("reveal.points", { n: entry.points })}

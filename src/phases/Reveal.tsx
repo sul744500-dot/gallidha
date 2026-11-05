@@ -48,7 +48,7 @@ export function Reveal({ v }: { v: RoomView }) {
             {t("reveal.sabotaged")} {t(`sab.${cur.sabotage}` as I18nKey)}
           </div>
         )}
-        {r.step === "score" && cur.result && <ScoreCard entry={cur.result} />}
+        {r.step === "score" && cur.result && <ScoreCard entry={cur.result} sound={v.sound} />}
       </Card>
       {r.done.length > 1 && (
         <div className="flex flex-wrap justify-center gap-2">

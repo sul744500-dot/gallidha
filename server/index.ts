@@ -165,7 +165,7 @@ async function main() {
       if (!def) return json(res, 404, { error: "unknown_sound" });
       const body = await readBody(req, MAX_RECORDING_BYTES);
       if (!body) return json(res, 413, { error: "too_large" });
-      const result = await scorer.score({ soundId: def.info.id, file: def.file, weights: def.weights, wav: body, maxMs: 11_000 });
+      const result = await scorer.score({ soundId: def.info.id, file: def.file, weights: def.weights, words: def.words, template: def.template, wav: body, maxMs: 11_000 });
       return json(res, 200, result);
     }
     app(req, res);

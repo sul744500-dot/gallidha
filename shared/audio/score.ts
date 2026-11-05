@@ -3,8 +3,8 @@
 // ثم مقارنة منحنى طبقة الصوت بعد إلغاء الطبقة الطبيعية لكل شخص، والإيقاع، والتوقيت، والشدة.
 
 import type { ScoreParts, ScoreResult, ScoreStatus } from "../types";
-import { clamp, median, pearson, percentile, stretch } from "./dsp";
-import { HOP, type AudioFeatures } from "./features";
+import { clamp, hzToMel, median, melToHz, pearson, percentile, stretch } from "./dsp";
+import { FMAX, FMIN, HOP, N_MELS, type AudioFeatures } from "./features";
 import { SAMPLE_RATE } from "../constants";
 
 export type Weights = ScoreParts;
@@ -15,7 +15,7 @@ export const DEFAULT_WEIGHTS: Weights = { pitch: 0.27, rhythm: 0.2, timing: 0.18
  * معايرة كل معيار: تحويل التشابه الخام (0..1) إلى درجة عرض.
  * lo = مستوى الصدفة تقريبًا (أصوات مختلفة)، hi = تقليد ممتاز. القيم من scripts/calibrate.ts
  */
-export const CALIBRATION: Record<keyof ScoreParts, { lo: number; hi: number }> = {
+export const CALIBRATION: Record<Exclude<keyof ScoreParts, "words">, { lo: number; hi: number }> = {
   pitch: { lo: 0.42, hi: 0.86 },
   rhythm: { lo: 0.36, hi: 0.82 },
   timing: { lo: 0.42, hi: 0.95 },
@@ -252,9 +252,144 @@ function onsetF1(ref: number[], rec: number[], tol: number): number {
 
 export interface CompareOptions {
   weights?: Partial<Weights>;
+  /**
+   * الصوت فيه كلام: لازم ينطق اللاعب حروفًا ومقاطع فعلية (الهمهمة «ممممم» على نفس اللحن ما تكفي).
+   * true = نقارن بمعدلات النطق العامة للكلام، أو خصائص «قالب الكلمات» (نطق نظيف لنفس الكلمات)
+   * فنعرف كم انتقال نطق فيها حتى لو غنّاها اللاعب ببطء.
+   */
+  words?: boolean | AudioFeatures;
 }
 
-function display(part: keyof ScoreParts, sim: number): number {
+// ───────────── الكلام لا الهمهمة ─────────────
+// الهمهمة «ممممم» تتبع اللحن والإيقاع بدقة، لكن شكل طيفها ثابت (الشفتان مغلقتان طول الوقت).
+// الكلام ينقل الطاقة بين مناطق الطيف مع كل حرف: علّة مفتوحة، احتكاك (س ش ف)، وقفة (ت ك ق)، أنفي (م ن).
+// نقيس «انتقالات النطق»: تغيّر توزيع الطاقة على 10 مجموعات ترددية عريضة فوق 350Hz
+// (عرض كل مجموعة ≥450Hz فتحوي أكثر من توافقية: لا تتأثر بطبقة الصوت ولا بلحن الهمهمة)
+// بعد طرح ضجيج الغرفة، بين إطارين يفصلهما 40ms، بمسافة Hellinger (لا تتأثر بارتفاع الصوت ولا بالنطاقات الضعيفة).
+
+const ART_EDGES = [350, 800, 1250, 1700, 2200, 2800, 3500, 4300, 5200, 6300, 7700];
+const NG = ART_EDGES.length - 1;
+let bandGroup: Int8Array | null = null;
+function groupOfBand(): Int8Array {
+  if (bandGroup) return bandGroup;
+  const mMin = hzToMel(FMIN);
+  const step = (hzToMel(FMAX) - mMin) / (N_MELS + 1);
+  bandGroup = new Int8Array(N_MELS).fill(-1);
+  for (let i = 0; i < N_MELS; i++) {
+    const c = melToHz(mMin + step * (i + 1));
+    for (let j = 0; j < NG; j++) if (c >= ART_EDGES[j] && c < ART_EDGES[j + 1]) bandGroup[i] = j;
+  }
+  return bandGroup;
+}
+
+export interface SpeechStats {
+  /** انتقالات نطق (≥0.15) بالثانية من الصوت المسموع */
+  r15: number;
+  /** انتقالات قوية (≥0.3) بالثانية: حروف واضحة */
+  r30: number;
+  /** تنوّع شكل الطيف (كم صوت مختلف نطق) */
+  disp: number;
+  /** نسبة الإطارات الاحتكاكية (س، ش، ف، ث) */
+  fric: number;
+  n15: number;
+  n30: number;
+  sec: number;
+}
+
+export function speechStats(f: AudioFeatures): SpeechStats {
+  const G = groupOfBand();
+  const raw = f.logMel.map((row) => {
+    const g = new Float64Array(NG);
+    for (let i = 0; i < N_MELS; i++) if (G[i] >= 0) g[G[i]] += Math.exp(row[i]);
+    return g;
+  });
+  // ضجيج الغرفة من الإطارات الهادئة فعلًا (خارج النشاط)؛ إن لم توجد نطرح نصف أدنى قيمة فقط
+  const quiet: number[] = [];
+  for (let t = 0; t < f.frames; t++) if (!f.active[t] && f.db[t] < f.stats.peakDb - 25) quiet.push(t);
+  const noise = new Float64Array(NG);
+  for (let j = 0; j < NG; j++) {
+    if (quiet.length >= 8) {
+      const v = quiet.map((t) => raw[t][j]).sort((a, b) => a - b);
+      noise[j] = v[v.length >> 1];
+    } else {
+      let mn = Infinity;
+      for (const g of raw) if (g[j] < mn) mn = g[j];
+      noise[j] = mn / 2;
+    }
+  }
+  const shape = raw.map((g0) => {
+    const g = new Float64Array(NG);
+    let s = 0;
+    for (let j = 0; j < NG; j++) s += g[j] = Math.max(g0[j] - 2 * noise[j], 0);
+    for (let j = 0; j < NG; j++) g[j] = Math.sqrt(g[j] / (s || 1));
+    return g;
+  });
+  const floorDb = f.stats.peakDb - 30;
+  const idx: number[] = [];
+  for (let t = f.a; t < f.b; t++) if (f.active[t] && f.db[t] >= f.stats.peakDb - 40) idx.push(t);
+  const n = idx.length;
+  const empty = { r15: 0, r30: 0, disp: 0, fric: 0, n15: 0, n30: 0, sec: n / 100 };
+  if (n < 10) return empty;
+  const s = new Float64Array(n);
+  for (let k = 0; k < n; k++) {
+    const t = idx[k];
+    if (t < 2 || t + 2 >= f.frames || f.db[t - 2] < floorDb || f.db[t + 2] < floorDb) continue;
+    let bc = 0;
+    for (let j = 0; j < NG; j++) bc += shape[t - 2][j] * shape[t + 2][j];
+    s[k] = Math.sqrt(Math.max(0, 1 - bc));
+  }
+  const peaks = (th: number) => {
+    let c = 0;
+    let last = -99;
+    for (let k = 1; k + 1 < n; k++) {
+      if (s[k] >= th && s[k] >= s[k - 1] && s[k] > s[k + 1] && k - last >= 4) {
+        c++;
+        last = k;
+      }
+    }
+    return c;
+  };
+  const mean = new Float64Array(NG);
+  for (const t of idx) for (let j = 0; j < NG; j++) mean[j] += shape[t][j] ** 2 / n;
+  let disp = 0;
+  let fric = 0;
+  for (const t of idx) {
+    let bc = 0;
+    let hf = 0;
+    for (let j = 0; j < NG; j++) {
+      bc += shape[t][j] * Math.sqrt(mean[j]);
+      if (ART_EDGES[j] >= 3500) hf += shape[t][j] ** 2;
+    }
+    disp += (1 - bc) / n;
+    if (hf > 0.3) fric++;
+  }
+  const sec = n / 100;
+  const n15 = peaks(0.15);
+  const n30 = peaks(0.3);
+  return { r15: n15 / sec, r30: n30 / sec, disp: Math.sqrt(Math.max(0, disp)), fric: fric / n, n15, n30, sec };
+}
+
+/**
+ * 0..1: كم يشبه التسجيل كلامًا منطوقًا لا همهمة.
+ * المعايرة (scripts/calibrate-words.ts): الكلام بأصوات وسرعات مختلفة r15≈4–15 وr30≈1–12،
+ * والهمهمة «ممم/أممم/آآآ» على نفس اللحن r15≤3.3 وr30≤0.35.
+ */
+export function articulationIndex(u: SpeechStats, tmpl?: SpeechStats): number {
+  const rate = 0.35 * clamp((u.r15 - 1.8) / 3.2, 0, 1) + 0.45 * clamp((u.r30 - 0.35) / 1.65, 0, 1) + 0.2 * clamp((u.disp - 0.1) / 0.1, 0, 1);
+  let a = rate;
+  if (tmpl && tmpl.n15 > 0) {
+    // غناء ممدود للكلمات نفسها: المعدل بالثانية ينخفض لكن «عدد» الانتقالات يبقى مثل القالب.
+    // مسموح فقط لمن عنده حد أدنى من الانتقالات بالثانية (الهمهمة الطويلة تبقى تحته)
+    const count = clamp(u.n15 / (0.75 * tmpl.n15), 0, 1) * clamp(u.n30 / (0.5 * Math.max(2, tmpl.n30)), 0, 1);
+    a = Math.max(rate, Math.min(count, clamp((u.r15 - 1.8) / 1.7, 0, 1)));
+    // (جرّبنا اشتراط الحروف الاحتكاكية س/ش إذا كانت في الكلمات: كان يظلم المقطع الأصلي نفسه
+    //  لما يكون فيه هتاف جمهور يغطي السين، فما اعتمدناه — الضجيج في جلسة الأصحاب وارد)
+  }
+  return clamp(a, 0, 1);
+}
+
+
+function display(part: keyof typeof CALIBRATION, sim: number): number {
   const { lo, hi } = CALIBRATION[part];
   return Math.round(100 * clamp((sim - lo) / (hi - lo), 0, 1));
 }
@@ -481,18 +616,32 @@ export function compareFeatures(ref: AudioFeatures, rec: AudioFeatures, opts: Co
   w.pitch *= pitchWeightScale;
   let num = 0;
   let den = 0;
-  for (const k of Object.keys(parts) as (keyof ScoreParts)[]) {
+  for (const k of ["pitch", "rhythm", "timing", "energy", "spectral"] as const) {
     num += w[k] * parts[k];
     den += w[k];
   }
   // باقي المعايير تطبّع الزمن، فالمدة المختلفة جدًا (مثل 1.3 ث مقابل 2.3 ث) تُخصم من الإجمالي
   const durFactor = 0.55 + 0.45 * clamp((durSim - 0.3) / 0.45, 0, 1);
-  const score = Math.round(clamp((num / (den || 1)) * durFactor, 0, 100));
+  const melody = (num / (den || 1)) * durFactor;
+  let score = Math.round(clamp(melody, 0, 100));
+  let wordsDebug: Record<string, number> = {};
+  if (opts.words) {
+    // صوت فيه كلام: «الكلمات» = هل نطق اللاعب حروفًا ومقاطع فعلًا ولا همهمة.
+    // كلما ضعف النطق نزل الإجمالي كله: اللحن الصحيح بالهمهمة «ممممم» ما يجيب أكثر من ~15
+    const us = speechStats(rec);
+    const ts = opts.words === true ? undefined : speechStats(opts.words);
+    const A = articulationIndex(us, ts);
+    const W = Math.round(100 * A);
+    parts.words = W;
+    score = Math.round(clamp((0.3 * W + 0.7 * melody) * (0.25 + (0.75 * W) / 100), 0, 100));
+    wordsDebug = { words_A: A, r15: us.r15, r30: us.r30, disp: us.disp, fric: us.fric, n15: us.n15, n30: us.n30, melody };
+  }
   return {
     status: "ok",
     score,
     parts,
     debug: {
+      ...wordsDebug,
       dist,
       replay,
       refVoicedRatio,

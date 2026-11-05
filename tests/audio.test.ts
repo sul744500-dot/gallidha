@@ -5,9 +5,9 @@ import { describe, expect, it } from "vitest";
 import { decodeWav, encodeWav } from "../shared/audio/wav";
 import { resample } from "../shared/audio/resample";
 import { extractFeatures } from "../shared/audio/features";
-import { assessQuality, compareFeatures } from "../shared/audio/score";
-import { imitate } from "../shared/audio/imitate";
-import { applySabotage, sabotageDurationMs, SABOTAGES } from "../shared/audio/effects";
+import { articulationIndex, assessQuality, compareFeatures, speechStats } from "../shared/audio/score";
+import { imitate, impersonate } from "../shared/audio/imitate";
+import { applySabotage, pitchShift, sabotageDurationMs, SABOTAGES } from "../shared/audio/effects";
 import { SAMPLE_RATE } from "../shared/constants";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -197,5 +197,59 @@ describe("مؤثرات التخريب", () => {
   it("التقطيع حتمي بنفس البذرة", () => {
     const x = tone(300, 1);
     expect(applySabotage("chop", x, SAMPLE_RATE, 42)).toEqual(applySabotage("chop", x, SAMPLE_RATE, 42));
+  });
+});
+
+describe("الكلمات لا الهمهمة (مقاطع الترندات)", () => {
+  // مقطع حقيقي من المكتبة + «قالب الكلمات» (نطق آلي نظيف لنفس الكلمات)، وتسجيلات اختبار ثابتة:
+  // نفس الكلمات بـ Piper وبصوت Windows إنجليزي بلكنة (متحدث مختلف تمامًا)، وكلام آخر
+  const trends = resolve(root, "public/packs/trends");
+  const words = resolve(root, "tests/fixtures/words");
+  const load16 = (file: string) => {
+    const d = decodeWav(readFileSync(file));
+    return resample(d.samples, d.sampleRate, SAMPLE_RATE);
+  };
+  const clip = load16(join(trends, "algum-algum.wav"));
+  const ref = extractFeatures(clip, SAMPLE_RATE);
+  const template = extractFeatures(load16(join(trends, "algum-algum.words.wav")), SAMPLE_RATE);
+  const score = (x: Float32Array) => compareFeatures(ref, extractFeatures(x, SAMPLE_RATE), { words: template });
+
+  it("الهمهمة «ممم» و«أممم» على نفس اللحن بالضبط تاخذ درجة منخفضة وكلمات ≈ صفر", () => {
+    for (const [i, hum] of ([true, "umm"] as const).entries()) {
+      for (const range of [
+        [90, 200],
+        [180, 400],
+      ] as [number, number][]) {
+        const r = score(imitate(clip, SAMPLE_RATE, { hum, vowel: [280, 1100, 2300], range, sloppiness: 0.1, seed: 11 + i }));
+        expect(r.status).toBe("ok");
+        expect(r.parts!.words!).toBeLessThan(20);
+        expect(r.score!).toBeLessThan(20);
+      }
+    }
+  });
+
+  it("نطق الكلمات نفسها (أي صوت، أي سرعة) ياخذ الكلمات كاملة تقريبًا", () => {
+    for (const f of ["algum-algum.wav", "algum-algum-slow.wav", "algum-algum.david.wav", "algum-algum.zira-slow.wav"]) {
+      const r = score(load16(join(words, f)));
+      expect(r.status).toBe("ok");
+      expect(r.parts!.words!, f).toBeGreaterThanOrEqual(80);
+    }
+  });
+
+  it("التقليد الكامل (الكلمات + الأداء) أعلى بكثير من الهمهمة على نفس اللحن", () => {
+    const good = score(impersonate(clip, -3, 5));
+    const hum = score(imitate(clip, SAMPLE_RATE, { hum: true, vowel: [280, 1100, 2300], sloppiness: 0.1, seed: 3 }));
+    expect(good.status).toBe("ok");
+    expect(good.score!).toBeGreaterThanOrEqual(70);
+    expect(good.score! - hum.score!).toBeGreaterThan(50);
+  });
+
+  it("مقياس النطق لا يتأثر بطبقة الصوت ولا بالسرعة", () => {
+    const base = speechStats(extractFeatures(load16(join(words, "algum-algum-slow.wav")), SAMPLE_RATE));
+    const high = speechStats(extractFeatures(pitchShift(load16(join(words, "algum-algum-slow.wav")), SAMPLE_RATE, 5), SAMPLE_RATE));
+    expect(articulationIndex(base)).toBeGreaterThan(0.6);
+    expect(articulationIndex(high)).toBeGreaterThan(0.6);
+    const hum = speechStats(extractFeatures(imitate(clip, SAMPLE_RATE, { hum: true, range: [280, 520], seed: 2 }), SAMPLE_RATE));
+    expect(articulationIndex(hum)).toBeLessThan(0.2);
   });
 });

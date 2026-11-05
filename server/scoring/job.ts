@@ -11,6 +11,10 @@ export interface ScoreJob {
   soundId: string;
   file: string;
   weights?: Partial<ScoreParts>;
+  /** الصوت فيه كلام: نشترط نطقًا فعليًا */
+  words?: boolean;
+  /** ملف قالب الكلمات */
+  template?: string;
   wav: Uint8Array;
   /** أطول مدة مقبولة للتسجيل */
   maxMs: number;
@@ -18,12 +22,12 @@ export interface ScoreJob {
 
 const refCache = new Map<string, AudioFeatures>();
 
-function refFeatures(soundId: string, file: string): AudioFeatures {
-  let f = refCache.get(soundId);
+function refFeatures(file: string): AudioFeatures {
+  let f = refCache.get(file);
   if (!f) {
     const d = decodeWav(readFileSync(file));
     f = extractFeatures(d.samples, d.sampleRate);
-    refCache.set(soundId, f);
+    refCache.set(file, f);
   }
   return f;
 }
@@ -41,7 +45,8 @@ export function runScoreJob(job: ScoreJob): ScoreResult {
     return { status: "corrupt", score: null, parts: null };
   }
   const rec = extractFeatures(samples, SAMPLE_RATE);
-  const res = compareFeatures(refFeatures(job.soundId, job.file), rec, { weights: job.weights });
+  const words = job.template ? refFeatures(job.template) : !!job.words;
+  const res = compareFeatures(refFeatures(job.file), rec, { weights: job.weights, words });
   // لا نرسل تفاصيل التصحيح الداخلية للعملاء
   return { status: res.status, score: res.score, parts: res.parts };
 }

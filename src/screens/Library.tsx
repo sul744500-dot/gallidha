@@ -9,6 +9,7 @@ import { loadReference, playAt, stopPlayback } from "../audio/playback";
 import { toAudioBuffer, unlockAudio } from "../audio/engine";
 import { MicButton, Waveform } from "../components/Mic";
 import { ScoreCard } from "../components/ScoreCard";
+import { SayWords } from "../components/SayWords";
 import { Button, Card, Screen } from "../components/ui";
 import { useLang } from "../lib/lang";
 import { navigate } from "../lib/router";
@@ -137,6 +138,7 @@ export function Solo({ soundId }: { soundId?: string }) {
           <>
             <div className="text-6xl">{sound.emoji}</div>
             <div className="font-display text-3xl text-sun-300">{lt(sound.name)}</div>
+            <SayWords sound={sound} />
           </>
         )}
         <select
@@ -170,7 +172,7 @@ export function Solo({ soundId }: { soundId?: string }) {
         )}
         {stage === "analyzing" && <div className="font-display text-2xl">🧪 {t("solo.analyzing")}</div>}
         {result && stage === "done" && (
-          <ScoreCard entry={{ playerId: "me", status: result.status, score: result.score, parts: result.parts, multiplier: 1, points: result.score ?? 0, votes: 0, voteBonus: 0, sabotage: null, durationMs: 0, playMs: 0 }} />
+          <ScoreCard sound={sound} entry={{ playerId: "me", status: result.status, score: result.score, parts: result.parts, multiplier: 1, points: result.score ?? 0, votes: 0, voteBonus: 0, sabotage: null, durationMs: 0, playMs: 0 }} />
         )}
         <div className="flex flex-wrap justify-center gap-2">
           <Button size="lg" onClick={() => void run()} disabled={busy || !sound}>

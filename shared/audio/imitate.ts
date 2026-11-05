@@ -4,6 +4,7 @@
 
 import { SAMPLE_RATE } from "../constants";
 import { rng } from "./dsp";
+import { pitchShift } from "./effects";
 import { extractFeatures, HOP } from "./features";
 
 export interface ImitateOptions {
@@ -22,6 +23,11 @@ export interface ImitateOptions {
   vowel?: [number, number, number];
   /** المدى الصوتي للمقلّد بالهيرتز: البشر ينقلون اللحن لمداهم الطبيعي */
   range?: [number, number];
+  /**
+   * همهمة: صوت مجهور متصل بلا حروف هامسة ولا احتكاك (يتبع اللحن والإيقاع فقط).
+   * "umm" = «أممم أممم»: فتحة قصيرة عند بداية كل نغمة ثم إغلاق الشفتين على ميم.
+   */
+  hum?: boolean | "umm";
   seed?: number;
 }
 
@@ -62,16 +68,48 @@ export function imitate(ref: Float32Array, refRate: number, o: ImitateOptions = 
     const rr = Math.exp((-Math.PI * bw) / sr);
     return { a1: -2 * rr * Math.cos((2 * Math.PI * fc) / sr), a2: rr * rr, g: [1, 0.5, 0.25][k] * (1 - rr), y1: 0, y2: 0 };
   });
+  const tune = (fl: (typeof res)[number], k: number, fc: number) => {
+    const bw = [90, 120, 180][k];
+    const rr = Math.exp((-Math.PI * bw) / sr);
+    fl.a1 = -2 * rr * Math.cos((2 * Math.PI * fc) / sr);
+  };
+  // «أممم»: عدد الإطارات منذ بداية آخر نغمة (بعد صمت أو بداية مسجّلة)
+  const since = new Int32Array(f.frames).fill(999);
+  if (o.hum === "umm") {
+    const starts = new Set(f.onsets);
+    let c = 999;
+    for (let t = 0; t < f.frames; t++) {
+      if (starts.has(t) || (f.active[t] && (t === 0 || !f.active[t - 1]))) c = 0;
+      since[t] = c++;
+    }
+  }
+  const OPEN = [700, 1150, 2450];
   let timeWarp = 0;
+  let lastSt = med;
+  let ampS = 0;
   for (let k = 0; k < outFrames; k++) {
     if (k % 10 === 0) drift = drift * 0.7 + (r() * 2 - 1) * 2.2 * slop;
     timeWarp = Math.max(-6, Math.min(6, timeWarp + (r() * 2 - 1) * 1.5 * slop));
     const srcPos = Math.min(srcFrames - 1, Math.max(0, Math.round(k / stretchK + timeWarp)));
     const t = f.a + srcPos;
-    const st = f.pitch[t];
+    let st = f.pitch[t];
+    if (o.hum) {
+      // الهمهمة تبقى مجهورة حتى مكان الحروف الهامسة، والحنجرة تنزلق بين النغمات
+      // (لا تقفز مع أخطاء كشف الطبقة في الموسيقى: قفزة أكبر من 7 أنصاف درجة = خطأ كشف)
+      if (st !== st || Math.abs(st - lastSt) > 7) st = lastSt;
+      st = lastSt + (st - lastSt) * 0.35;
+    }
+    if (st === st) lastSt = st;
     const voiced = st === st;
-    const amp = f.active[t] ? 10 ** ((f.db[t] - maxDb) / 20) : 0;
-    const noisy = f.flatness[t] > 0.25 || !voiced;
+    let amp = f.active[t] ? 10 ** ((f.db[t] - maxDb) / 20) : 0;
+    const noisy = !o.hum && (f.flatness[t] > 0.25 || !voiced);
+    if (o.hum === "umm") {
+      // 90ms فتحة «أ» ثم انزلاق 60ms إلى «م» (الميم أهدأ بنحو 6dB)
+      const s = since[t];
+      const mix = s < 9 ? 0 : s < 15 ? (s - 9) / 6 : 1;
+      [F1, F2, F3].forEach((fc, q) => tune(res[q], q, OPEN[q] * (1 - mix) + fc * mix));
+      amp *= 1 - 0.5 * mix;
+    }
     for (let i = 0; i < HOP; i++) {
       const idx = lead + k * HOP + i;
       let src = 0;
@@ -102,7 +140,9 @@ export function imitate(ref: Float32Array, refRate: number, o: ImitateOptions = 
         fl.y1 = v;
         y += v;
       }
-      out[idx] = y * amp * 6;
+      // انتقال ناعم للشدة داخل الإطار (الحنجرة لا تقفز كل 10ms فتصدر نقرات)
+      ampS += (amp - ampS) * 0.004;
+      out[idx] = y * ampS * 6;
     }
   }
   let peak = 0;
@@ -110,5 +150,22 @@ export function imitate(ref: Float32Array, refRate: number, o: ImitateOptions = 
   const g = peak > 0 ? 0.5 / peak : 1;
   const noiseAmp = 10 ** ((o.noiseDb ?? -55) / 20);
   for (let i = 0; i < n; i++) out[i] = out[i] * g + (r() * 2 - 1) * noiseAmp;
+  return out;
+}
+
+/**
+ * «تقليد ممتاز» للاختبار: نفس الأداء (بالكلمات نفسها) بحنجرة أخرى (تغيير طبقة)،
+ * وميكروفون آخر (تنعيم)، وضجيج غرفة خفيف، وتأخير بداية 0.3 ثانية.
+ */
+export function impersonate(x: Float32Array, semis: number, seed: number): Float32Array {
+  const y = pitchShift(x, SAMPLE_RATE, semis);
+  const out = new Float32Array(y.length + 4800);
+  let lp = 0;
+  let s = seed;
+  for (let i = 0; i < y.length; i++) {
+    lp += 0.55 * (y[i] - lp);
+    s = (s * 1103515245 + 12345) & 0x7fffffff;
+    out[i + 4800] = lp * 0.8 + ((s / 0x7fffffff) * 2 - 1) * 0.003;
+  }
   return out;
 }

@@ -12,7 +12,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import puppeteer, { KnownDevices, type Browser, type Page } from "puppeteer-core";
-import { imitate } from "../shared/audio/imitate";
+import { impersonate } from "../shared/audio/imitate";
 import { resample } from "../shared/audio/resample";
 import { decodeWav, encodeWav } from "../shared/audio/wav";
 import type { RoomView } from "../shared/types";
@@ -60,8 +60,11 @@ function makeMedia() {
   // صوت الجولة المثبّت + صوت آخر من نفس المكتبة للتقليد الخاطئ
   const target = load(`${FORCE.split("/")[0]}/${FORCE.split("/")[1]}.wav`);
   const scream = load(OTHER);
-  const good = pad(imitate(target.samples, target.sampleRate, { sloppiness: 0.15, leadMs: 100, seed: 4 }), 16000, 0.6);
-  const wrong = pad(imitate(scream.samples, scream.sampleRate, { sloppiness: 0.2, leadMs: 100, seed: 9 }), 16000, 1.5);
+  // التقليد بالكلمات نفسها (نفس الأداء بحنجرة أخرى) — الهمهمة على اللحن صارت ما تجيب نقاط
+  const goodVoice = impersonate(resample(target.samples, target.sampleRate, 16000), 3, 4);
+  const wrongVoice = impersonate(resample(scream.samples, scream.sampleRate, 16000), -2, 9);
+  const good = pad(goodVoice.subarray(3200), 16000, 0.6);
+  const wrong = pad(wrongVoice.subarray(3200), 16000, 1.5);
   const silent = new Float32Array(16000 * 3);
   for (let i = 0; i < silent.length; i++) silent[i] = (Math.random() * 2 - 1) * 0.0004;
   const files = { good, wrong, silent };
@@ -72,9 +75,9 @@ function makeMedia() {
   }
   // نسخ بدون صمت إضافي للمايك الافتراضي (يبدأ التقليد مع «قلّد!» مثل اللاعب الحقيقي)
   paths.goodTake = join(MEDIA, "good-take.wav");
-  writeFileSync(paths.goodTake, Buffer.from(encodeWav(imitate(target.samples, target.sampleRate, { sloppiness: 0.15, leadMs: 0, seed: 4 }), 16000)));
+  writeFileSync(paths.goodTake, Buffer.from(encodeWav(goodVoice.subarray(4800), 16000)));
   paths.wrongTake = join(MEDIA, "wrong-take.wav");
-  writeFileSync(paths.wrongTake, Buffer.from(encodeWav(imitate(scream.samples, scream.sampleRate, { sloppiness: 0.2, leadMs: 0, seed: 9 }), 16000)));
+  writeFileSync(paths.wrongTake, Buffer.from(encodeWav(wrongVoice.subarray(4800), 16000)));
   return paths;
 }
 

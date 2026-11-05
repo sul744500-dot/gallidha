@@ -11,6 +11,10 @@ export interface SoundDef {
   info: SoundInfo;
   file: string;
   weights?: Partial<ScoreParts>;
+  /** لازم ينطق اللاعب كلامًا فعليًا (الهمهمة ما تكفي) */
+  words: boolean;
+  /** «قالب الكلمات»: نطق نظيف لنفس الكلمات (لعدّ الحروف والمقاطع المطلوبة) */
+  template?: string;
 }
 
 interface PackJson {
@@ -19,7 +23,19 @@ interface PackJson {
   emoji: string;
   name: LocalText;
   description: LocalText;
-  sounds: { id: string; file: string; name: LocalText; emoji: string; difficulty: 1 | 2 | 3; weights?: Partial<ScoreParts> }[];
+  /** كل أصوات الباقة فيها كلام/نطق: الهمهمة على اللحن ما تكفي */
+  articulate?: boolean;
+  sounds: {
+    id: string;
+    file: string;
+    name: LocalText;
+    emoji: string;
+    difficulty: 1 | 2 | 3;
+    weights?: Partial<ScoreParts>;
+    /** الكلمات المعروضة للاعب */
+    words?: LocalText;
+    template?: string;
+  }[];
 }
 
 const isText = (v: unknown): v is LocalText => !!v && typeof (v as LocalText).ar === "string" && typeof (v as LocalText).en === "string";
@@ -62,8 +78,11 @@ export class SoundLibrary {
         durationMs: Math.round((wav.samples.length / wav.sampleRate) * 1000),
         difficulty: [1, 2, 3].includes(s.difficulty) ? s.difficulty : 2,
       };
+      if (isText(s.words)) info.words = s.words;
+      if (p.articulate || info.words) info.speech = true;
+      const template = s.template && /^[\w-]+\.words\.wav$/.test(s.template) && existsSync(join(this.dir, folder, s.template)) ? join(this.dir, folder, s.template) : undefined;
       sounds.push(info);
-      this.byId.set(info.id, { info, file, weights: s.weights });
+      this.byId.set(info.id, { info, file, weights: s.weights, words: !!info.speech, template });
     }
     if (sounds.length) {
       this.packs.push({ id: folder, category: p.category, name: p.name, description: isText(p.description) ? p.description : p.name, emoji: p.emoji || "🔊", sounds });

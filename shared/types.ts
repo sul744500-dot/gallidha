@@ -75,6 +75,10 @@ export interface SoundInfo {
   url: string;
   durationMs: number;
   difficulty: 1 | 2 | 3;
+  /** كلمات المقطع (تظهر للاعبين ليقلّدوها بالكلمات) */
+  words?: LocalText;
+  /** يحتاج نطقًا فعليًا: الهمهمة على اللحن ما تكفي */
+  speech?: boolean;
 }
 
 export interface PackInfo {
@@ -92,6 +96,8 @@ export interface ScoreParts {
   timing: number;
   energy: number;
   spectral: number;
+  /** مطابقة الكلمات (للأصوات التي فيها كلام فقط) */
+  words?: number;
 }
 
 /**

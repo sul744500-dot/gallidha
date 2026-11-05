@@ -7,6 +7,7 @@ import { game } from "../game/client";
 import { AvatarFace } from "../components/AvatarFace";
 import { MicButton, useRaf, Waveform } from "../components/Mic";
 import { Card } from "../components/ui";
+import { SayWords } from "../components/SayWords";
 import type { I18nKey } from "../lib/i18n";
 import { useLang } from "../lib/lang";
 import { msUntil, serverNow } from "../lib/clock";
@@ -109,6 +110,7 @@ export function Listen({ v }: { v: RoomView }) {
         <Card className="space-y-2 p-5">
           <div className="text-7xl">{v.sound.emoji}</div>
           <div className="font-display text-3xl text-sun-300">{lt(v.sound.name)}</div>
+          <SayWords sound={v.sound} />
           <RefBars />
           <div className="text-sm text-white/70">{d.refPlaying ? "🔊" : "⏳"} {t("phase.listenOnce")}</div>
         </Card>
@@ -169,6 +171,7 @@ export function Record({ v }: { v: RoomView }) {
         )}
         <Waveform />
         {m.muted ? <MicButton /> : silent && d.recording && <div className="animate-pop font-bold text-tang-300">{t("phase.silentHint")}</div>}
+        {v.sound && <SayWords sound={v.sound} compact />}
       </Card>
     </div>
   );
