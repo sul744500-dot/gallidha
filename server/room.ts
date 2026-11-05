@@ -2,6 +2,7 @@
 // العضوية والمضيف وإعادة الاتصال، مراحل الجولة بتوقيت الخادم، استقبال التسجيلات وتقييمها،
 // العرض المتسلسل، التصويت، عجلة الحظ والتخريب، والنتائج النهائية.
 
+import { prankScore } from "./prank";
 import { randomBytes } from "node:crypto";
 import { MIN_PLAYERS, NAME_MAX, TIMING, VOTE_POINTS, type TimingKey } from "../shared/constants";
 import { SABOTAGES, sabotageDurationMs } from "../shared/audio/effects";
@@ -562,7 +563,7 @@ export class Room {
       upload = { wav: null, mutedAll, result: Promise.resolve(res), settled: res, durationMs: 0 };
     } else {
       const durationMs = Math.max(0, Math.round(((wav.byteLength - 44) / 2 / 16000) * 1000));
-      const result = this.deps.scorer.score({ soundId: sound.info.id, file: sound.file, weights: sound.weights, words: sound.words, template: sound.template, wav, maxMs: m.record.maxMs });
+      const result = this.deps.scorer.score({ soundId: sound.info.id, file: sound.file, weights: sound.weights, words: sound.words, template: sound.template, wav, maxMs: m.record.maxMs }).then((r) => prankScore(p.name, r));
       upload = { wav, mutedAll: false, result, settled: null, durationMs };
       void result.then((r) => (upload.settled = r));
     }

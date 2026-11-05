@@ -12,6 +12,7 @@ import { ScoreCard } from "../components/ScoreCard";
 import { SayWords } from "../components/SayWords";
 import { Button, Card, Screen } from "../components/ui";
 import { useLang } from "../lib/lang";
+import { prefs } from "../lib/prefs";
 import { navigate } from "../lib/router";
 import { sfx } from "../lib/sfx";
 import { useStore } from "../lib/store";
@@ -121,7 +122,7 @@ export function Solo({ soundId }: { soundId?: string }) {
     setMine(out.samples16k);
     setStage("analyzing");
     try {
-      const res = await fetch(`/api/practice/score?sound=${encodeURIComponent(sound.id)}`, { method: "POST", body: out.wav, headers: { "content-type": "audio/wav" } });
+      const res = await fetch(`/api/practice/score?sound=${encodeURIComponent(sound.id)}&name=${encodeURIComponent(prefs.get().name)}`, { method: "POST", body: out.wav, headers: { "content-type": "audio/wav" } });
       setResult(out.mutedAll ? { status: "muted", score: null, parts: null } : ((await res.json()) as ScoreResult));
     } catch {
       setResult({ status: "missing", score: null, parts: null });

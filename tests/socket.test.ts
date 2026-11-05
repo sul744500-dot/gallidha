@@ -208,6 +208,29 @@ describe("الغرف واللعب الجماعي عبر Socket.IO", () => {
     [host, b, c].forEach((x) => x.disconnect());
   }, 90000);
 
+  it("مقلب صاحب اللعبة: «عبدالرحمن» ياخذ 1–5 مهما قلّد، والباقي درجاتهم طبيعية", async () => {
+    const host = new Bot("سارة");
+    const created = await host.create({ rounds: 2, wheel: false, revealOrder: "fixed", maxPlayers: 4 });
+    if (!created.ok) throw new Error("create failed");
+    const target = new Bot("عبد الرحمن");
+    expect((await target.join(created.code)).ok).toBe(true);
+    await host.until((v) => v.players.length === 2);
+    target.socket.emit("room:ready", true);
+    await host.until((v) => v.players.filter((p) => p.ready).length === 1);
+    expect((await host.socket.emitWithAck("room:start")).ok).toBe(true);
+    await host.until((v) => v.phase === "final", 60000);
+    const shown = host.views.flatMap((v) => v.reveal?.done ?? []);
+    const mine = shown.filter((e) => e.playerId === target.me && e.status === "ok");
+    const hers = shown.filter((e) => e.playerId === host.me && e.status === "ok");
+    expect(mine.length).toBeGreaterThan(0);
+    for (const e of mine) {
+      expect(e.score!).toBeGreaterThanOrEqual(1);
+      expect(e.score!).toBeLessThanOrEqual(5);
+    }
+    expect(Math.max(...hers.map((e) => e.score!))).toBeGreaterThan(20);
+    [host, target].forEach((x) => x.disconnect());
+  }, 90000);
+
   it("وضع الضحك: تصويت بدون التصويت للنفس + نقاط التصويت", async () => {
     const a = new Bot("أ");
     const r = await a.create({ rounds: 4, mode: "laugh", wheel: false });

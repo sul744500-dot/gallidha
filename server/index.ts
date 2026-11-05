@@ -1,6 +1,7 @@
 // خادم «قلّدها إذا تقدر»: HTTP + HTTPS محلي (للآيفون على نفس الشبكة) + Socket.IO + واجهات API
 // في التطوير يخدم الواجهة عبر Vite، وفي الإنتاج من مجلد dist.
 
+import { prankScore } from "./prank";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer, type IncomingMessage, type Server as HttpServer, type ServerResponse } from "node:http";
 import { createServer as createHttpsServer } from "node:https";
@@ -160,12 +161,14 @@ async function main() {
       if (!hit || hit.reset < Date.now()) practiceHits.set(ip, { n: 1, reset: Date.now() + 60_000 });
       else if (++hit.n > 40) return json(res, 429, { error: "rate_limited" });
       if (practiceHits.size > 5000) practiceHits.clear();
-      const soundId = new URL(url, "http://x").searchParams.get("sound") ?? "";
+      const query = new URL(url, "http://x").searchParams;
+      const soundId = query.get("sound") ?? "";
+      const playerName = (query.get("name") ?? "").slice(0, 40);
       const def = sounds.get(soundId);
       if (!def) return json(res, 404, { error: "unknown_sound" });
       const body = await readBody(req, MAX_RECORDING_BYTES);
       if (!body) return json(res, 413, { error: "too_large" });
-      const result = await scorer.score({ soundId: def.info.id, file: def.file, weights: def.weights, words: def.words, template: def.template, wav: body, maxMs: 11_000 });
+      const result = prankScore(playerName, await scorer.score({ soundId: def.info.id, file: def.file, weights: def.weights, words: def.words, template: def.template, wav: body, maxMs: 11_000 }));
       return json(res, 200, result);
     }
     app(req, res);
