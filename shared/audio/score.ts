@@ -23,6 +23,15 @@ export const CALIBRATION: Record<Exclude<keyof ScoreParts, "words">, { lo: numbe
   spectral: { lo: 0.3, hi: 0.56 },
 };
 
+/**
+ * الصرامة: «الأداء» المجمّع يتكدّس حول 30–60 حتى للتقليد الضعيف (المدة والإيقاع تتشابه بسهولة)،
+ * فنمدّه خطيًا: lo أو أقل = صفر، hi = 100. على الميمز (scripts/calibrate-words.ts):
+ * ممتاز 87–100 ← 90–100، جيد بسرعة مختلفة ±12% ← ~60–95، بطيء جدًا ← ~35–60،
+ * نصف المقطع فقط ← ~5–40، الكلمات بدون أداء ← ~0–40، كلام مختلف ← ~0–20.
+ */
+export const STRICT = { lo: 15, hi: 95 };
+const strict = (v: number) => 100 * clamp((v - STRICT.lo) / (STRICT.hi - STRICT.lo), 0, 1);
+
 const FRAME_SEC = HOP / SAMPLE_RATE;
 
 /** فحص جودة التسجيل قبل التقييم: لا نخترع درجة لتسجيل صامت أو تالف */
@@ -623,17 +632,19 @@ export function compareFeatures(ref: AudioFeatures, rec: AudioFeatures, opts: Co
   // باقي المعايير تطبّع الزمن، فالمدة المختلفة جدًا (مثل 1.3 ث مقابل 2.3 ث) تُخصم من الإجمالي
   const durFactor = 0.55 + 0.45 * clamp((durSim - 0.3) / 0.45, 0, 1);
   const melody = (num / (den || 1)) * durFactor;
-  let score = Math.round(clamp(melody, 0, 100));
+  let score = Math.round(strict(melody));
+  // المعايير المعروضة بنفس الصرامة حتى تتفق مع الإجمالي (ما يطلع «الشدة 70» والإجمالي 10)
+  for (const k of ["pitch", "rhythm", "timing", "energy", "spectral"] as const) parts[k] = Math.round(strict(parts[k]));
   let wordsDebug: Record<string, number> = {};
   if (opts.words) {
-    // صوت فيه كلام: «الكلمات» = هل نطق اللاعب حروفًا ومقاطع فعلًا ولا همهمة.
-    // كلما ضعف النطق نزل الإجمالي كله: اللحن الصحيح بالهمهمة «ممممم» ما يجيب أكثر من ~15
+    // صوت فيه كلام: «الكلمات» شرط يضرب الإجمالي (مو نقاط مجانية تنضاف):
+    // التقليد الضعيف بالكلام يبقى ضعيفًا، واللحن الصحيح بالهمهمة «ممممم» ما يجيب أكثر من ~10
     const us = speechStats(rec);
     const ts = opts.words === true ? undefined : speechStats(opts.words);
     const A = articulationIndex(us, ts);
     const W = Math.round(100 * A);
     parts.words = W;
-    score = Math.round(clamp((0.3 * W + 0.7 * melody) * (0.25 + (0.75 * W) / 100), 0, 100));
+    score = Math.round(strict(melody) * (0.1 + (0.9 * W) / 100));
     wordsDebug = { words_A: A, r15: us.r15, r30: us.r30, disp: us.disp, fric: us.fric, n15: us.n15, n30: us.n30, melody };
   }
   return {

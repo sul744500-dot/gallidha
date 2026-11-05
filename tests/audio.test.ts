@@ -243,6 +243,17 @@ describe("الكلمات لا الهمهمة (مقطع ميم حقيقي)", () =
     expect(good.score! - hum.score!).toBeGreaterThan(50);
   });
 
+  it("صارم: الكلام الغلط ونص المقطع ياخذون قليل، والتقليد الجيد يبقى عالي", () => {
+    for (const f of ["other-1.wav", "other-2.wav", "other-3.wav", "wrong-1.david.wav", "wrong-2.zira.wav"]) {
+      const r = score(load16(join(words, f)));
+      expect(r.score ?? 0, f).toBeLessThanOrEqual(20);
+    }
+    const half = score(impersonate(clip.slice(0, Math.round(clip.length * 0.5)), 2, 6));
+    expect(half.score ?? 0).toBeLessThanOrEqual(45);
+    const slower = score(impersonate(resample(clip, SAMPLE_RATE * 0.9, SAMPLE_RATE), -2, 7));
+    expect(slower.score!).toBeGreaterThanOrEqual(65);
+  });
+
   it("مقياس النطق لا يتأثر بطبقة الصوت ولا بالسرعة", () => {
     const base = speechStats(extractFeatures(load16(join(words, "algum-algum-slow.wav")), SAMPLE_RATE));
     const high = speechStats(extractFeatures(pitchShift(load16(join(words, "algum-algum-slow.wav")), SAMPLE_RATE, 5), SAMPLE_RATE));
